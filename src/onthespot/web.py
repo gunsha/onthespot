@@ -28,6 +28,7 @@ from .parse_item import parsingworker, parse_url
 from .runtimedata import get_logger, account_pool, pending, download_queue, download_queue_lock, pending_lock
 from .search import get_search_results
 from .utils import format_bytes
+from waitress import serve
 
 logger = get_logger("web")
 os.environ['FLASK_ENV'] = 'production'
@@ -379,8 +380,8 @@ def main():
         logger.info(f'Found cached download queue at {cached_file_path}, appending items to download queue...')
         get_search_results(cached_file_path)
         os.remove(cached_file_path)
-
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    logger.info(f"Starting WSGI server on http://{args.host}:{args.port}")
+    serve(app, host=args.host, port=args.port)
 
 
 if __name__ == '__main__':
