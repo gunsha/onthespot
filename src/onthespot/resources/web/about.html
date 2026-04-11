@@ -5,11 +5,31 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - About</title>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
     <body x-data="{
+        version: '...',
+        statistics: '...',
+        init() {
+            fetch('/api/config')
+                .then(r => r.json())
+                .then(data => {
+                    this.version = data.config.version || 'Unknown';
+                    const items = data.config.total_downloaded_items || 0;
+                    const bytes = data.config.total_downloaded_data || 0;
+                    this.statistics = `${items} / ${this.formatBytes(bytes)}`;
+                });
+        },
+        formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        },
         clearCache() {
             fetch('/api/clear_cache', { method: 'DELETE' })
             .then(res => res.json())
@@ -29,9 +49,9 @@
 
             <div class="flex flex-col sm:flex-row items-center justify-between mb-8 px-4 gap-4">
                 <div class="flex items-center flex-wrap justify-center text-sm">
-                    <p class="mx-2">Version: <span class="font-semibold">{{ version }}</span></p>
+                    <p class="mx-2">Version: <span class="font-semibold" x-text="version"></span></p>
                     <p class="hidden sm:block opacity-50">|</p>
-                    <p class="mx-2 sm:mr-1">Total Downloads: <span class="font-semibold">{{ statistics }}</span></p>
+                    <p class="mx-2 sm:mr-1">Total Downloads: <span class="font-semibold" x-text="statistics"></span></p>
                 </div>
 
                 <div class="flex items-center flex-wrap gap-2 justify-center">

@@ -131,34 +131,50 @@ def index():
 @app.route('/search')
 @login_required
 def search():
-    config_path = os.path.join(config_dir(), 'otsconfig.json')
-    with open(config_path, 'r') as config_file:
-        config_data = json.load(config_file)
-    return render_template('search.html', config=config_data)
+    return render_template('search.html')
 
 
 @app.route('/download_queue')
 @login_required
 def download_queue_page():
-    config_path = os.path.join(config_dir(), 'otsconfig.json')
-    with open(config_path, 'r') as config_file:
-        config_data = json.load(config_file)
-    return render_template('download_queue.html', config=config_data)
+    return render_template('download_queue.html')
 
 
 @app.route('/settings')
 @login_required
 def settings():
-    config_path = os.path.join(config_dir(), 'otsconfig.json')
-    with open(config_path, 'r') as config_file:
-        config_data = json.load(config_file)
-    return render_template('settings.html', config=config_data, account_pool=account_pool)
+    return render_template('settings.html')
 
 
 @app.route('/about')
 @login_required
 def about():
     return render_template('about.html', version=config.get("version"), statistics=f"{config.get('total_downloaded_items')} / {format_bytes(config.get('total_downloaded_data'))}")
+
+
+@app.route('/api/config')
+@login_required
+def get_config():
+    config_path = os.path.join(config_dir(), 'otsconfig.json')
+    with open(config_path, 'r') as config_file:
+        config_data = json.load(config_file)
+        
+    safe_account_pool = []
+    for acc in account_pool:
+        if isinstance(acc, dict):
+            safe_account_pool.append({
+                "username": acc.get("username", ""),
+                "service": acc.get("service", ""),
+                "account_type": acc.get("account_type", ""),
+                "bitrate": acc.get("bitrate", ""),
+                "status": acc.get("status", ""),
+                "uuid": acc.get("uuid", "")
+            })
+            
+    return jsonify({
+        "config": config_data,
+        "account_pool": safe_account_pool
+    })
 
 
 @app.route('/api/search_results')
@@ -239,6 +255,22 @@ def restart():
 def get_items():
     with download_queue_lock:
         return Response(json.dumps(download_queue, sort_keys=True), mimetype='application/json')
+
+
+@app.route('/api/download_queue/stream')
+@login_required
+def stream_items():
+    def generate():
+        last_json = ""
+        while True:
+            with download_queue_lock:
+                current_json = json.dumps(download_queue, sort_keys=True)
+            if current_json != last_json:
+                yield f"data: {current_json}\n\n"
+                last_json = current_json
+            time.sleep(0.5)
+            
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/cancel/<path:local_id>', methods=['POST'])
 @login_required
@@ -381,7 +413,7 @@ def main():
         get_search_results(cached_file_path)
         os.remove(cached_file_path)
     logger.info(f"Starting WSGI server on http://{args.host}:{args.port}")
-    serve(app, host=args.host, port=args.port)
+    serve(app, host=args.host, port=args.port, threads=16)
 
 
 if __name__ == '__main__':

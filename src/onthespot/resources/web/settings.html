@@ -6,8 +6,8 @@
         <title>OnTheSpot - Settings</title>
         <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
     <body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10">
@@ -52,30 +52,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for account in account_pool %}
+                            <template x-for="(account, index) in accountPool" :key="index">
                             <tr class="hover">
                                 <td>
                                     <label>
-                                        <input type="radio" name="active_account_number" value="{{ loop.index - 1 }}" x-model="config.active_account_number" @change="saveSettings()" class="radio radio-primary radio-sm">
+                                        <input type="radio" name="active_account_number" :value="index" x-model.number="config.active_account_number" @change="saveSettings()" class="radio radio-primary radio-sm">
                                     </label>
                                 </td>
-                                <td class="max-w-[10px] truncate">{{ account.username }}{% if account.username|length > 20 %}...{% endif %}</td>
+                                <td class="max-w-[10px] truncate" x-text="account.username.length > 20 ? account.username.substring(0, 20) + '...' : account.username"></td>
                                 <td>
                                     <div class="flex items-center gap-2">
-                                        <img src="/icons/{{ account.service }}.png" loading="lazy" class="w-5 h-5">
-                                        <span class="hidden sm:inline">{{ account.service.replace('_', ' ').title() }}</span>
+                                        <img :src="'/icons/' + account.service + '.png'" loading="lazy" class="w-5 h-5">
+                                        <span class="hidden sm:inline" x-text="account.service.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
                                     </div>
                                 </td>
-                                <td class="hidden sm:table-cell">{{ account.account_type|capitalize }}</td>
-                                <td>{{ account.bitrate }}</td>
-                                <td>{{ account.status|capitalize }}</td>
+                                <td class="hidden sm:table-cell" x-text="account.account_type.charAt(0).toUpperCase() + account.account_type.slice(1)"></td>
+                                <td x-text="account.bitrate"></td>
+                                <td x-text="account.status.charAt(0).toUpperCase() + account.status.slice(1)"></td>
                                 <td class="hidden sm:table-cell">
-                                    <button value="{{ account.uuid }}" class="btn btn-square btn-ghost btn-sm" @click="removeAccount('{{ account.uuid }}')">
+                                    <button :value="account.uuid" class="btn btn-square btn-ghost btn-sm" @click="removeAccount(account.uuid)">
                                         <img src="/icons/trash.png" loading="lazy" class="w-4 h-4">
                                     </button>
                                 </td>
                             </tr>
-                            {% endfor %}
+                            </template>
                         </tbody>
                     </table>
                 </div>
@@ -323,7 +323,8 @@
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('settingsApp', () => ({
-                    config: {{ config | tojson }},
+                    config: {},
+                    accountPool: [],
                     newAccount: {
                         service: 'qobuz',
                         username: '',
@@ -340,6 +341,12 @@
 
                     init() {
                         this.handleServiceChange();
+                        fetch('/api/config')
+                            .then(r => r.json())
+                            .then(data => {
+                                this.config = data.config || {};
+                                this.accountPool = data.account_pool || [];
+                            });
                     },
 
                     saveSettings() {

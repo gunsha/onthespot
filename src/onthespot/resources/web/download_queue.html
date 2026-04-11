@@ -6,8 +6,8 @@
     <title>OnTheSpot - Download Queue</title>
     <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
     <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
 <body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10">
@@ -60,9 +60,9 @@
                 <thead class="bg-base-300 text-base-content text-sm">
                     <tr>
                         <th style="display: none;">Local ID</th>
-                        {% if config.show_download_thumbnails %}
+                        <template x-if="config.show_download_thumbnails">
                             <th>Image</th>
-                        {% endif %}
+                        </template>
                         <th @click="setSort('item_name')" class="cursor-pointer hover:bg-base-200 transition-colors">
                             Name <span x-text="getSortIndicator('item_name')" class="inline-block w-4 text-center"></span>
                         </th>
@@ -85,13 +85,13 @@
                     <template x-for="(item, index) in filteredAndSortedItems" :key="item.local_id">
                         <tr class="hover">
                             <td style="display: none;" x-text="item.local_id"></td>
-                            {% if config.show_download_thumbnails %}
+                            <template x-if="config.show_download_thumbnails">
                                 <td>
                                     <template x-if="item.item_thumbnail">
-                                        <img :src="item.item_thumbnail" loading="lazy" class="rounded object-cover" :style="'width: ' + {{ config.thumbnail_size }} + 'px; height: ' + {{ config.thumbnail_size }} + 'px;'">
+                                        <img :src="item.item_thumbnail" loading="lazy" class="rounded object-cover" :style="'width: ' + config.thumbnail_size + 'px; height: ' + config.thumbnail_size + 'px;'">
                                     </template>
                                 </td>
-                            {% endif %}
+                            </template>
                             <td class="font-medium max-w-[200px] truncate" x-text="item.item_name"></td>
                             <td class="hidden sm:table-cell max-w-[150px] truncate" x-text="capitalizeFirstLetter(item.parent_category)"></td>
                             <td>
@@ -138,21 +138,46 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('downloadQueueApp', () => ({
-                config: {{ config | tojson | safe }},
+                config: {},
                 items: [],
                 sortColumn: null,
                 sortDirection: 'asc',
                 showCustomFilters: false,
                 filters: {
-                    download_queue_show_waiting: {% if config.download_queue_show_waiting %}true{% else %}false{% endif %},
-                    download_queue_show_completed: {% if config.download_queue_show_completed %}true{% else %}false{% endif %},
-                    download_queue_show_cancelled: {% if config.download_queue_show_cancelled %}true{% else %}false{% endif %},
-                    download_queue_show_failed: {% if config.download_queue_show_failed %}true{% else %}false{% endif %},
-                    download_queue_show_unavailable: {% if config.download_queue_show_unavailable %}true{% else %}false{% endif %},
+                    download_queue_show_waiting: true,
+                    download_queue_show_completed: true,
+                    download_queue_show_cancelled: true,
+                    download_queue_show_failed: true,
+                    download_queue_show_unavailable: true,
                 },
                 init() {
+                    fetch('/api/config')
+                        .then(r => r.json())
+                        .then(data => {
+                            this.config = data.config || {};
+                            this.filters.download_queue_show_waiting = !!this.config.download_queue_show_waiting;
+                            this.filters.download_queue_show_completed = !!this.config.download_queue_show_completed;
+                            this.filters.download_queue_show_cancelled = !!this.config.download_queue_show_cancelled;
+                            this.filters.download_queue_show_failed = !!this.config.download_queue_show_failed;
+                            this.filters.download_queue_show_unavailable = !!this.config.download_queue_show_unavailable;
+                        });
                     this.fetchItems();
-                    setInterval(() => this.fetchItems(), 2000);
+                    this.initSSE();
+                },
+                initSSE() {
+                    if (this.evtSource) {
+                        this.evtSource.close();
+                    }
+                    this.evtSource = new EventSource('/api/download_queue/stream');
+                    this.evtSource.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.items = Object.values(data);
+                    };
+                    this.evtSource.onerror = (err) => {
+                        console.error('SSE Error:', err);
+                        this.evtSource.close();
+                        setTimeout(() => this.initSSE(), 5000); // Reconnect after 5 seconds
+                    };
                 },
                 fetchItems() {
                     fetch('/api/download_queue')

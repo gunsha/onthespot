@@ -6,22 +6,35 @@
         <title>OnTheSpot - Search</title>
         <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
     <body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10" x-data="{
         query: '',
         results: [],
         showFilters: false,
+        config: {},
         filters: {
-            enable_search_tracks: {% if config.enable_search_tracks %}true{% else %}false{% endif %},
-            enable_search_albums: {% if config.enable_search_albums %}true{% else %}false{% endif %},
-            enable_search_playlists: {% if config.enable_search_playlists %}true{% else %}false{% endif %},
-            enable_search_artists: {% if config.enable_search_artists %}true{% else %}false{% endif %},
-            enable_search_episodes: {% if config.enable_search_episodes %}true{% else %}false{% endif %},
-            enable_search_podcasts: {% if config.enable_search_podcasts %}true{% else %}false{% endif %},
-            enable_search_audiobooks: {% if config.enable_search_audiobooks %}true{% else %}false{% endif %},
+            enable_search_tracks: false,
+            enable_search_albums: false,
+            enable_search_playlists: false,
+            enable_search_artists: false,
+            enable_search_episodes: false,
+            enable_search_podcasts: false,
+            enable_search_audiobooks: false,
+        },
+        init() {
+            fetch('/api/config').then(r => r.json()).then(d => {
+                this.config = d.config || {};
+                this.filters.enable_search_tracks = !!this.config.enable_search_tracks;
+                this.filters.enable_search_albums = !!this.config.enable_search_albums;
+                this.filters.enable_search_playlists = !!this.config.enable_search_playlists;
+                this.filters.enable_search_artists = !!this.config.enable_search_artists;
+                this.filters.enable_search_episodes = !!this.config.enable_search_episodes;
+                this.filters.enable_search_podcasts = !!this.config.enable_search_podcasts;
+                this.filters.enable_search_audiobooks = !!this.config.enable_search_audiobooks;
+            });
         },
         submitSearch() {
             fetch(`/api/search_results?q=${encodeURIComponent(this.query)}`)
@@ -58,16 +71,14 @@
                 <li><a href="/about" class="hover:bg-base-300">About</a></li>
             </ul>
 
-            <div class="flex items-center justify-between mb-4 px-2 w-full">
-                <div class="flex items-center w-full max-w-[calc(100%-40px)]">
-                    <form @submit.prevent="submitSearch()" class="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center w-full">
-                        <input type="text" x-model="query" placeholder="Search by name" class="input input-bordered w-full sm:max-w-[250px] focus:input-primary">
-                        <button type="submit" class="btn btn-primary w-full sm:w-auto">Search</button>
-                    </form>
-                </div>
+            <div class="grid grid-cols-[1fr_auto] gap-2 mb-4 px-2 w-full max-w-3xl mx-auto">
+                <form @submit.prevent="submitSearch()" class="flex flex-col sm:flex-row gap-2.5 items-center w-full">
+                    <input type="text" x-model="query" placeholder="Search by name" class="input input-bordered w-full focus:input-primary">
+                    <button type="submit" class="btn btn-primary w-full sm:w-auto">Search</button>
+                </form>
 
-                <div class="flex items-center">
-                    <button @click="showFilters = !showFilters" class="btn btn-square btn-ghost hidden sm:inline-flex">
+                <div class="flex items-start sm:items-center">
+                    <button @click="showFilters = !showFilters" class="btn btn-square btn-ghost">
                         <img :src="showFilters ? '/icons/collapse_up.png' : '/icons/collapse_down.png'" loading="lazy" class="w-5 h-5">
                     </button>
                 </div>
@@ -75,7 +86,7 @@
 
             <div x-show="showFilters" style="display: none;" class="mb-4">
                 <div class="divider text-opacity-50">Filters</div>
-                <div class="flex flex-col sm:flex-row items-center justify-between bg-base-200 p-4 rounded-box">
+                <div class="flex flex-col sm:flex-row items-center justify-between bg-base-200 p-4 rounded-box max-w-3xl mx-auto">
                     <div class="flex items-center flex-wrap gap-4 outline-none">
                         <span class="font-semibold hidden sm:inline-flex">Search For:</span>
                         <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Tracks</span> <input type="checkbox" x-model="filters.enable_search_tracks" class="checkbox checkbox-primary checkbox-sm"></label>
@@ -94,59 +105,45 @@
                 </div>
             </div>
 
-            <div class="w-full overflow-x-auto">
-                <table class="table table-zebra table-sm sm:table-md w-full shadow-lg rounded-box bg-base-200">
-                    <thead class="bg-base-300 text-base-content text-sm">
-                        <tr>
-                            {% if config.show_search_thumbnails %}
-                            <th class="w-16">Image</th>
-                            {% endif %}
-                            <th>Name</th>
-                            <th class="hidden md:table-cell">By</th>
-                            <th class="hidden sm:table-cell">Type</th>
-                            <th>Service</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="(item, index) in results" :key="index">
-                            <tr class="hover">
-                                {% if config.show_search_thumbnails %}
-                                <td>
-                                    <template x-if="item.item_thumbnail_url">
-                                        <img :src="item.item_thumbnail_url" loading="lazy" class="rounded object-cover min-w-[32px]" :style="'width: ' + {{ config.thumbnail_size }} + 'px; height: ' + {{ config.thumbnail_size }} + 'px;'">
-                                    </template>
-                                </td>
-                                {% endif %}
-                                <td class="max-w-[140px] sm:max-w-xs truncate">
-                                    <div class="font-medium truncate" x-text="item.item_name"></div>
-                                    <div class="text-xs opacity-70 truncate md:hidden" x-text="(item.item_by ? item.item_by + ' • ' : '') + capitalizeFirstLetter(item.item_type)"></div>
-                                </td>
-                                <td class="hidden md:table-cell max-w-[200px] truncate" x-text="item.item_by"></td>
-                                <td class="hidden sm:table-cell" x-text="capitalizeFirstLetter(item.item_type)"></td>
-                                <td>
+            <div class="w-full">
+                <ul class="list bg-base-200 rounded-box shadow-md mx-auto max-w-7xl">
+                    <template x-if="results.length > 0">
+                        <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Search Results</li>
+                    </template>
+                    <template x-for="(item, index) in results" :key="index">
+                        <li class="list-row">
+                            <template x-if="config.show_search_thumbnails">
+                            <div>
+                                <template x-if="item.item_thumbnail_url">
+                                    <img :src="item.item_thumbnail_url" loading="lazy" class="rounded object-cover aspect-square" :style="'width: ' + config.thumbnail_size + 'px; height: ' + config.thumbnail_size + 'px;'">
+                                </template>
+                            </div>
+                            </template>
+                            
+                            <div>
+                                <div class="font-medium truncate" x-text="item.item_name"></div>
+                                <div class="text-xs uppercase font-semibold opacity-60 flex items-center gap-1 mt-1 truncate">
+                                    <span class="truncate" x-text="(item.item_by ? item.item_by + ' • ' : '') + capitalizeFirstLetter(item.item_type)"></span>
+                                    
                                     <template x-if="item.item_service">
-                                        <div class="flex items-center gap-2">
-                                            <img :src="'/icons/' + item.item_service + '.png'" loading="lazy" class="w-5 h-5 min-w-[20px]">
-                                            <span class="hidden sm:inline" x-text="formatServiceName(item.item_service)"></span>
-                                        </div>
+                                        <span class="inline-flex items-center gap-1 flex-shrink-0">
+                                            <span>•</span>
+                                            <img :src="'/icons/' + item.item_service + '.png'" loading="lazy" class="w-3 h-3 opacity-80 min-w-[12px]">
+                                            <span x-text="formatServiceName(item.item_service)"></span>
+                                        </span>
                                     </template>
-                                    <template x-if="!item.item_service">
-                                        <span class="hidden sm:inline" x-text="formatServiceName(item.item_service)"></span>
-                                    </template>
-                                </td>
-                                <td class="whitespace-nowrap">
-                                    <button @click="copyToClipboard(item.item_url)" class="btn btn-square btn-ghost btn-sm mr-1">
-                                        <img src="icons/link.png" loading="lazy" alt="Copy Link" class="w-4 h-4">
-                                    </button>
-                                    <button @click="handleDownload(item.item_url)" class="btn btn-square btn-ghost btn-sm">
-                                        <img src="icons/download.png" loading="lazy" alt="Download" class="w-4 h-4">
-                                    </button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+                            
+                            <button @click="copyToClipboard(item.item_url)" class="btn btn-square btn-ghost" title="Copy Link">
+                                <img src="icons/link.png" loading="lazy" alt="Copy Link" class="w-5 h-5">
+                            </button>
+                            <button @click="handleDownload(item.item_url)" class="btn btn-square btn-ghost" title="Download">
+                                <img src="icons/download.png" loading="lazy" alt="Download" class="w-5 h-5">
+                            </button>
+                        </li>
+                    </template>
+                </ul>
             </div>
         </div>
     </body>
