@@ -1,30 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-background text-white font-sans">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Login</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+        <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
+        <script src="{{ url_for('static', filename='twind.js') }}"></script>
+        <script src="{{ url_for('static', filename='twind-setup.js') }}"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body>
-        <div id="main">
+    <body class="flex justify-center mx-auto pt-20 text-center m-0">
+        <div class="mx-auto text-center w-full max-w-[600px]">
             <h1>OnTheSpot - Login</h1>
-            <div id="logo" class="col">
-                <img src="icons/onthespot.png" alt="OnTheSpot logo">
+            <div class="inline-block align-middle md:mr-4">
+                <img src="icons/onthespot.png" alt="OnTheSpot logo" class="h-[11em]">
             </div>
-            <div id="formplace" class="col">
-                <form id="loginform" method="POST">
-                    <div class="row">
+            <div class="inline-block align-middle p-2.5 text-left">
+                <form id="loginform" method="POST" class="flex flex-col gap-2.5">
+                    <div class="mb-[5px]">
                         <label for="username">Username</label><br>
-                        <input type="text" id="username" name="username" autocomplete="username" autofocus="" required="">
+                        <input type="text" id="username" name="username" autocomplete="username" autofocus="" required="" class="bg-[#1e1e1e] text-white border-2 border-[#1e1e1e] rounded-[10px] text-xs px-3 py-2.5 w-[250px] outline-none focus:border-accent">
                     </div>
-                    <div class="row">
+                    <div class="mb-[5px]">
                         <label for="password">Password</label><br>
-                        <input type="password" id="password" name="password" autocomplete="current-password" required="">
+                        <input type="password" id="password" name="password" autocomplete="current-password" required="" class="bg-[#1e1e1e] text-white border-2 border-[#1e1e1e] rounded-[10px] text-xs px-3 py-2.5 w-[250px] outline-none focus:border-accent">
                     </div>
-                    <div class="row">
-                        <input type="submit" id="loginButton" value="Login">
+                    <div class="mb-[5px] flex justify-end">
+                        <input type="submit" id="loginButton" value="Login" class="bg-[#1e1e1e] text-white border-2 border-[#1e1e1e] rounded-[10px] text-xs px-[20px] py-[12px] focus:border-accent outline-none cursor-pointer">
                     </div>
                 </form>
             </div>

@@ -1,1145 +1,402 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-background text-white font-sans">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Settings</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
         <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
+        <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
+        <script src="{{ url_for('static', filename='twind.js') }}"></script>
+        <script src="{{ url_for('static', filename='twind-setup.js') }}"></script>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body>
-        <div class="header">
-            <ul>
-                <li class="hide-on-mobile"><a href="https://github.com/justin025/onthespot/" target="_blank">OnTheSpot</a></li>
-                <li><a href="/search">Search</a></li>
-                <li><a href="/download_queue">Downloads</a></li>
-                <li><a class="active" href="/settings">Settings</a></li>
-                <li><a href="/about">About</a></li>
-            </ul>
-        </div>
-
-        <br>
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-            <div style="display: flex; align-items: center;">
-                <h2>Account Pool</h2>
+    <body class="m-0 flex flex-col items-center">
+        <div class="w-full" x-data="settingsApp()">
+            <div class="bg-[#1e1e1e] p-2.5 border border-[#333] rounded-[5px] m-2">
+                <ul class="list-none p-0 m-0 flex">
+                    <li class="hidden sm:block mr-[15px]"><a href="https://github.com/justin025/onthespot/" target="_blank" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">OnTheSpot</a></li>
+                    <li class="mr-[15px]"><a href="/search" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">Search</a></li>
+                    <li class="mr-[15px]"><a href="/download_queue" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">Downloads</a></li>
+                    <li class="mr-[15px]"><a href="/settings" class="no-underline px-[15px] py-2 rounded-[5px] bg-accent text-[#121212]">Settings</a></li>
+                    <li class="mr-[15px]"><a href="/about" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">About</a></li>
+                </ul>
             </div>
 
-            <div style="display: flex; align-items: center;">
-                {% if config.use_webui_login%}
-                <button class="download-action-button"  onclick="window.location.href='/api/logout';">
-                    <img src="/icons/leave.png" loading="lazy" style="width: 20px; height: 20px;">
-                </button>
-                {% endif %}
-                <button class="download-action-button"  onclick="updateSettings(returnSettingsData())">
-                    <img src="/icons/save.png" loading="lazy" style="width: 20px; height: 20px;">
-                </button>
+            <br>
+            <div class="flex items-center justify-between mb-[15px] px-2">
+                <div class="flex items-center">
+                    <h2 class="text-xl font-bold">Account Pool</h2>
+                </div>
+
+                <div class="flex items-center">
+                    <template x-if="config.use_webui_login">
+                        <button class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-2" @click="window.location.href='/api/logout';">
+                            <img src="/icons/leave.png" loading="lazy" class="w-5 h-5">
+                        </button>
+                    </template>
+                    <button class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer" @click="saveSettings()">
+                        <img src="/icons/save.png" loading="lazy" class="w-5 h-5">
+                    </button>
+                </div>
             </div>
+
+            <form @submit.prevent>
+                <table class="w-full border-collapse mb-5">
+                    <thead>
+                        <tr>
+                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Active</th>
+                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] overflow-hidden whitespace-nowrap overflow-ellipsis">Username</th>
+                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Service</th>
+                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] hidden sm:table-cell">Account Type</th>
+                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Max Resolution</th>
+                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Status</th>
+                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] hidden sm:table-cell">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in account_pool %}
+                        <tr class="odd:bg-rowOdd even:bg-rowEven">
+                            <td class="border-2 border-[#1f1f1f] p-2 w-[10px]">
+                                <label>
+                                    <input type="radio" name="active_account_number" value="{{ loop.index - 1 }}" x-model="config.active_account_number" @change="saveSettings()">
+                                </label>
+                            </td>
+                            <td class="border-2 border-[#1f1f1f] p-2 max-w-[10px] truncate">{{ account.username }}{% if account.username|length > 20 %}...{% endif %}</td>
+                            <td class="border-2 border-[#1f1f1f] p-2">
+                                <img src="/icons/{{ account.service }}.png" loading="lazy" class="w-5 h-5 mr-[5px] inline-block align-middle">
+                                <span class="hidden sm:inline align-middle">{{ account.service.replace('_', ' ').title() }}</span>
+                            </td>
+                            <td class="border-2 border-[#1f1f1f] p-2 hidden sm:table-cell">{{ account.account_type|capitalize }}</td>
+                            <td class="border-2 border-[#1f1f1f] p-2">{{ account.bitrate }}</td>
+                            <td class="border-2 border-[#1f1f1f] p-2">{{ account.status|capitalize }}</td>
+                            <td class="border-2 border-[#1f1f1f] p-2 hidden sm:table-cell">
+                                <button value="{{ account.uuid }}" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer" @click="removeAccount('{{ account.uuid }}')">
+                                    <img src="/icons/trash.png" loading="lazy" class="w-5 h-5">
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+
+            <div class="flex items-center mt-5 px-2">
+                <select id="login_services" x-model="newAccount.service" @change="handleServiceChange()" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent hidden sm:inline-block">
+                    <option value="" disabled>Audio:</option>
+                    <option value="apple_music">Apple Music</option>
+                    <option value="bandcamp">Bandcamp</option>
+                    <option value="deezer">Deezer</option>
+                    <option value="qobuz" selected>Qobuz</option>
+                    <option value="soundcloud">Soundcloud</option>
+                    <option value="spotify">Spotify</option>
+                    <option value="tidal">Tidal</option>
+                    <option value="youtube_music">Youtube Music</option>
+                    <option value="" disabled></option>
+                    <option value="" disabled>Video:</option>
+                    <option value="crunchyroll">Crunchyroll</option>
+                    <option value="generic">Generic</option>
+                </select>
+                <input type="text" x-model="newAccount.username" x-show="showUsernameInput" :placeholder="usernamePlaceholder" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent hidden sm:inline-block">
+                <input type="text" x-model="newAccount.password" x-show="showPasswordInput" :placeholder="passwordPlaceholder" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent hidden sm:inline-block">
+                <button type="button" @click="addAccount()" x-show="showAddButton" x-text="addButtonText" class="hidden sm:inline-block px-5 py-3 ml-2.5 border-none rounded-[10px] bg-accent text-white cursor-pointer text-xs transition-colors hover:bg-[#777]">Add Account</button>
+                <p x-show="showNotice" x-text="noticeText" class="hidden sm:inline-block ml-2.5 mb-0 text-[#ff4444]"></p>
+            </div>
+            <br class="hidden sm:block">
+
+            {% macro twind_checkbox(id, label_text) %}
+            <tr>
+                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
+                <td class="border-2 border-[#1f1f1f] p-2">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="{{ id }}" x-model="config.{{ id }}" class="sr-only peer">
+                        <div class="w-[2.5em] h-[1.25em] bg-transparent border border-white rounded-[20px] transition-colors duration-300 peer-checked:bg-accent after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[0.15em] after:bg-current after:border after:border-current after:rounded-full after:h-[1em] after:w-[1em] after:transition-all peer-checked:after:left-[1.2em]"></div>
+                    </label>
+                </td>
+            </tr>
+            {% endmacro %}
+
+            {% macro twind_text_input(id, label_text, placeholder) %}
+            <tr>
+                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
+                <td class="border-2 border-[#1f1f1f] p-2">
+                    <input type="text" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors duration-300 text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent">
+                </td>
+            </tr>
+            {% endmacro %}
+            
+            {% macro twind_password_input(id, label_text, placeholder) %}
+            <tr>
+                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
+                <td class="border-2 border-[#1f1f1f] p-2">
+                    <input type="password" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors duration-300 text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent">
+                </td>
+            </tr>
+            {% endmacro %}
+
+            {% macro twind_number_input(id, label_text, placeholder) %}
+            <tr>
+                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
+                <td class="border-2 border-[#1f1f1f] p-2">
+                    <input type="number" id="{{ id }}" x-model.number="config.{{ id }}" placeholder="{{ placeholder }}" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors duration-300 text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent">
+                </td>
+            </tr>
+            {% endmacro %}
+
+            <form id="settings-form" @submit.prevent>
+
+                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Web UIs</h2>
+                <table class="w-full border-collapse mb-5">
+                    <colgroup>
+                        <col class="w-1/2">
+                        <col class="w-1/2">
+                    </colgroup>
+                    <tbody>
+                        {{ twind_checkbox("use_webui_login", "Enable Web UI Login Page:") }}
+                        {{ twind_text_input("webui_username", "Web UI Username:", "Enter your username") }}
+                        {{ twind_password_input("webui_password", "Web UI Password:", "Enter your password") }}
+                    </tbody>
+                </table>
+
+                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">General</h2>
+                <table class="w-full border-collapse mb-5">
+                    <colgroup>
+                        <col class="w-1/2">
+                        <col class="w-1/2">
+                    </colgroup>
+                    <tbody>
+                        {{ twind_text_input("explicit_label", "Explicit Label:", "Enter explicit label") }}
+                        {{ twind_checkbox("download_copy_btn", "Add Copy Button to Downloads:") }}
+                        {{ twind_checkbox("download_open_btn", "Add Open Button to Downloads:") }}
+                        {{ twind_checkbox("download_locate_btn", "Add Locate Button to Downloads:") }}
+                        {{ twind_checkbox("download_delete_btn", "Add Delete Button to Downloads:") }}
+                        {{ twind_checkbox("show_search_thumbnails", "Show Thumbnails in Search View:") }}
+                        {{ twind_checkbox("show_download_thumbnails", "Show Thumbnails in Download View:") }}
+                        {{ twind_number_input("thumbnail_size", "Thumbnail Size (px):", "Enter thumbnail size") }}
+                        {{ twind_number_input("max_search_results", "Max Search Results:", "Enter max search results") }}
+                        {{ twind_checkbox("disable_download_popups", "Hide Download Popups:") }}
+                        {{ twind_checkbox("windows_10_explorer_thumbnails", "Use Old ID3 Format for Windows 10 Explorer:") }}
+                        {{ twind_checkbox("mirror_spotify_playback", "Mirror Spotify Playback:") }}
+                        {{ twind_checkbox("close_to_tray", "Close Application to Tray:") }}
+                        {{ twind_checkbox("check_for_updates", "Check for Updates:") }}
+                        {{ twind_text_input("illegal_character_replacement", "Illegal Character Replacement:", "Enter character for replacement") }}
+                        {{ twind_checkbox("raw_media_download", "Skip Media Conversion:") }}
+                        {{ twind_checkbox("rotate_active_account_number", "Rotate Active Account:") }}
+                        {{ twind_number_input("download_delay", "Download Delay (seconds):", "Enter download delay") }}
+                        {{ twind_number_input("download_chunk_size", "Download Chunk Size (bytes):", "Enter chunk size") }}
+                        {{ twind_number_input("maximum_queue_workers", "Maximum Queue Workers:", "Enter max queue workers") }}
+                        {{ twind_number_input("maximum_download_workers", "Maximum Download Workers:", "Enter max download workers") }}
+                        {{ twind_checkbox("enable_retry_worker", "Enable Retry Worker:") }}
+                        {{ twind_number_input("retry_worker_delay", "Retry Worker Delay (minutes):", "Enter retry delay") }}
+                    </tbody>
+                </table>
+
+                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Audio Downloads</h2>
+                <table class="w-full border-collapse mb-5">
+                    <colgroup>
+                        <col class="w-1/2">
+                        <col class="w-1/2">
+                    </colgroup>
+                    <tbody>
+                        {{ twind_text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }}
+                        {{ twind_text_input("track_file_format", "Track File Format:", "Enter track file format") }}
+                        {{ twind_text_input("track_path_formatter", "Track Path Formatter:", "Enter track path format") }}
+                        {{ twind_text_input("podcast_file_format", "Podcast File Format:", "Enter podcast file format") }}
+                        {{ twind_text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format") }}
+                        {{ twind_checkbox("use_playlist_path", "Use Playlist Path:") }}
+                        {{ twind_text_input("playlist_path_formatter", "Playlist Path Formatter:", "Enter playlist path format") }}
+                        {{ twind_checkbox("create_m3u_file", "Create M3U File:") }}
+                        {{ twind_text_input("m3u_path_formatter", "M3U Path Formatter:", "Enter M3U path format") }}
+                        {{ twind_text_input("extinf_separator", "EXTINF Separator:", "Enter EXTINF metadata separator") }}
+                        {{ twind_text_input("extinf_label", "EXTINF Label:", "Enter EXTINF label format") }}
+                        {{ twind_checkbox("save_album_cover", "Save Album Cover:") }}
+                        {{ twind_text_input("album_cover_format", "Album Cover Format:", "Enter album cover format") }}
+                        {{ twind_text_input("file_bitrate", "File Bitrate:", "Enter file bitrate") }}
+                        {{ twind_number_input("file_hertz", "File Hertz:", "Enter file hertz") }}
+                        {{ twind_checkbox("use_custom_file_bitrate", "Use Custom File Bitrate:") }}
+                        {{ twind_checkbox("download_lyrics", "Enable Lyrics Download:") }}
+                        {{ twind_checkbox("only_download_synced_lyrics", "Only Download Synced Lyrics:") }}
+                        {{ twind_checkbox("only_download_plain_lyrics", "Only Download Plain Lyrics:") }}
+                        {{ twind_checkbox("save_lrc_file", "Save LRC File:") }}
+                        {{ twind_checkbox("translate_file_path", "Translate File Path:") }}
+                    </tbody>
+                </table>
+
+                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Audio Metadata</h2>
+                <table class="w-full border-collapse mb-5">
+                    <colgroup>
+                        <col class="w-1/2">
+                        <col class="w-1/2">
+                    </colgroup>
+                    <tbody>
+                        {{ twind_text_input("metadata_separator", "Metadata Separator:", "Enter metadata separator") }}
+                        {{ twind_checkbox("overwrite_existing_metadata", "Overwrite Existing Metadata:") }}
+                        {{ twind_checkbox("embed_branding", "Embed Branding:") }}
+                        {{ twind_checkbox("embed_cover", "Embed Cover:") }}
+                        {{ twind_checkbox("embed_artist", "Embed Artist:") }}
+                        {{ twind_checkbox("embed_album", "Embed Album:") }}
+                        {{ twind_checkbox("embed_albumartist", "Embed Album Artist:") }}
+                        {{ twind_checkbox("embed_name", "Embed Name:") }}
+                        {{ twind_checkbox("embed_year", "Embed Year:") }}
+                        {{ twind_checkbox("embed_discnumber", "Embed Disc Number:") }}
+                        {{ twind_checkbox("embed_tracknumber", "Embed Track Number:") }}
+                        {{ twind_checkbox("embed_genre", "Embed Genre:") }}
+                        {{ twind_checkbox("embed_performers", "Embed Performers:") }}
+                        {{ twind_checkbox("embed_producers", "Embed Producers:") }}
+                        {{ twind_checkbox("embed_writers", "Embed Writers:") }}
+                        {{ twind_checkbox("embed_label", "Embed Label:") }}
+                        {{ twind_checkbox("embed_copyright", "Embed Copyright:") }}
+                        {{ twind_checkbox("embed_description", "Embed Description:") }}
+                        {{ twind_checkbox("embed_language", "Embed Language:") }}
+                        {{ twind_checkbox("embed_isrc", "Embed ISRC:") }}
+                        {{ twind_checkbox("embed_length", "Embed Length:") }}
+                        {{ twind_checkbox("embed_url", "Embed URL:") }}
+                        {{ twind_checkbox("embed_key", "Embed Key:") }}
+                        {{ twind_checkbox("embed_bpm", "Embed BPM:") }}
+                        {{ twind_checkbox("embed_compilation", "Embed Compilation:") }}
+                        {{ twind_checkbox("embed_lyrics", "Embed Lyrics:") }}
+                        {{ twind_checkbox("embed_explicit", "Embed Explicit:") }}
+                        {{ twind_checkbox("embed_upc", "Embed UPC:") }}
+                        {{ twind_checkbox("embed_service_id", "Embed Service ID:") }}
+                        {{ twind_checkbox("embed_timesignature", "Embed Time Signature:") }}
+                        {{ twind_checkbox("embed_acousticness", "Embed Acousticness:") }}
+                        {{ twind_checkbox("embed_danceability", "Embed Danceability:") }}
+                        {{ twind_checkbox("embed_energy", "Embed Energy:") }}
+                        {{ twind_checkbox("embed_instrumentalness", "Embed Instrumentalness:") }}
+                        {{ twind_checkbox("embed_liveness", "Embed Liveness:") }}
+                        {{ twind_checkbox("embed_loudness", "Embed Loudness:") }}
+                        {{ twind_checkbox("embed_speechiness", "Embed Speechiness:") }}
+                        {{ twind_checkbox("embed_valence", "Embed Valence:") }}
+                    </tbody>
+                </table>
+
+                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Video Downloads</h2>
+                <table class="w-full border-collapse mb-5">
+                    <colgroup>
+                        <col class="w-1/2">
+                        <col class="w-1/2">
+                    </colgroup>
+                    <tbody>
+                        {{ twind_text_input("video_download_path", "Video Download Path:", "Enter video download path") }}
+                        {{ twind_text_input("movie_file_format", "Movie File Format:", "Enter movie file format") }}
+                        {{ twind_text_input("movie_path_formatter", "Movie Path Formatter:", "Enter movie path format") }}
+                        {{ twind_text_input("show_file_format", "Show File Format:", "Enter show file format") }}
+                        {{ twind_text_input("show_path_formatter", "Show Path Formatter:", "Enter show path format") }}
+                        {{ twind_number_input("preferred_video_resolution", "Preferred Video Resolution:", "Enter max video resolution") }}
+                        {{ twind_checkbox("download_subtitles", "Download Subtitles:") }}
+                        {{ twind_text_input("preferred_audio_language", "Preferred Audio Language:", "Enter preferred audio language") }}
+                        {{ twind_text_input("preferred_subtitle_language", "Preferred Subtitle Language:", "Enter preferred subtitle language") }}
+                        {{ twind_checkbox("download_all_available_audio", "Download All Available Audio:") }}
+                        {{ twind_checkbox("download_all_available_subtitles", "Download All Available Subtitles:") }}
+                    </tbody>
+                </table>
+            </form>
         </div>
-
-        <form>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Active</th>
-                        <th style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Username</th>
-                        <th>Service</th>
-                        <th class="hide-on-mobile">Account Type</th>
-                        <th>Max Resolution</th>
-                        <th>Status</th>
-                        <th class="hide-on-mobile">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for account in account_pool %}
-                    <tr>
-                        <td style="width: 10px">
-                            <label>
-                                <input type="radio" name="active_account_number" value="{{ loop.index - 1 }}" onclick="updateSettings(returnSettingsData())"
-                                {% if loop.index - 1 == config.active_account_number %} checked {% endif %}>
-                            </label>
-                        </td>
-                        <td style="max-width: 10px; overflow: hidden; text-overflow: ellipsis;">{{ account.username }}{% if account.username|length > 20 %}...{% endif %}</td>
-                        <td>
-                            <img src="/icons/{{ account.service }}.png" loading="lazy" style="width: 20px; height: 20px; margin-right: 5px;">
-                            <span class="hide-on-mobile">{{ account.service.replace('_', ' ').title() }}</span>
-                        </td>
-                        <td class="hide-on-mobile">{{ account.account_type|capitalize }}</td>
-                        <td>{{ account.bitrate }}</td>
-                        <td>{{ account.status|capitalize }}</td>
-                        <td class="hide-on-mobile">
-                            <button value="{{ account.uuid }}" class="download-action-button" onclick="removeAccount(this.value)">
-                                <img src="/icons/trash.png" loading="lazy">
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </form>
-
-        <div style="display: flex; align-items: center; margin-top: 20px;">
-            <select id="login_services" style="width: auto;" onchange="handleServiceChange()" class="hide-on-mobile">
-                <option value="" disabled>Audio:</option>
-                <option value="apple_music">Apple Music</option>
-                <option value="bandcamp">Bandcamp</option>
-                <option value="deezer">Deezer</option>
-                <option value="qobuz" selected>Qobuz</option>
-                <option value="soundcloud">Soundcloud</option>
-                <option value="spotify">Spotify</option>
-                <option value="tidal">Tidal</option>
-                <option value="youtube_music">Youtube Music</option>
-                <option value="" disabled></option>
-                <option value="" disabled>Video:</option>
-                <option value="crunchyroll">Crunchyroll</option>
-                <option value="generic">Generic</option>
-            </select>
-            <input type="text" id="login_username" placeholder="Enter your email" class="hide-on-mobile">
-            <input type="text" id="login_password" placeholder="Enter your password" class="hide-on-mobile">
-            <button id="login_button" type="button" onclick="addAccount()" class="hide-on-mobile">Add Account</button>
-            <p id="login_notice" class="hide-on-mobile"></p>
-        </div>
-        <br class="hide-on-mobile">
-
-        <form id="settings-form">
-
-            <h2>Web UIs</h2>
-            <table>
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="use_webui_login">Enable Web UI Login Page:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="checkbox" class="sliding_button" id="use_webui_login" {% if config.use_webui_login %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="webui_username">Web UI Username:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="webui_username" value="{{ config.webui_username }}" placeholder="Enter your username">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="webui_password">Web UI Password:</label>
-                    </td>
-                    <td>
-                        <input type="password" id="webui_password" value="{{ config.webui_password }}" placeholder="Enter your password">
-                    </td>
-                </tr>
-            </table>
-
-            <h2>General</h2>
-
-            <table style="width: 100%;">
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="explicit_label">Explicit Label:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="text" id="explicit_label" value="{{ config.explicit_label }}" placeholder="Enter explicit label">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_copy_btn">Add Copy Button to Downloads:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_copy_btn" {% if config.download_copy_btn %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_open_btn">Add Open Button to Downloads:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_open_btn" {% if config.download_open_btn %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_locate_btn">Add Locate Button to Downloads:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_locate_btn" {% if config.download_locate_btn %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_delete_btn">Add Delete Button to Downloads:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_delete_btn" {% if config.download_delete_btn %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="show_search_thumbnails">Show Thumbnails in Search View:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="show_search_thumbnails" {% if config.show_search_thumbnails %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="show_download_thumbnails">Show Thumbnails in Download View:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="show_download_thumbnails" {% if config.show_download_thumbnails %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="thumbnail_size">Thumbnail Size (px):</label>
-                    </td>
-                    <td>
-                        <input type="number" id="thumbnail_size" value="{{ config.thumbnail_size }}" placeholder="Enter thumbnail size">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="max_search_results">Max Search Results:</label>
-                    </td>
-                    <td>
-                        <input type="number" id="max_search_results" value="{{ config.max_search_results }}" placeholder="Enter max search results">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="disable_download_popups">Hide Download Popups:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="disable_download_popups" {% if config.disable_download_popups %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="windows_10_explorer_thumbnails">Use Old ID3 Format for Windows 10 Explorer:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="windows_10_explorer_thumbnails" {% if config.windows_10_explorer_thumbnails %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="mirror_spotify_playback">Mirror Spotify Playback:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="mirror_spotify_playback" {% if config.mirror_spotify_playback %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="close_to_tray">Close Application to Tray:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="close_to_tray" {% if config.close_to_tray %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="check_for_updates">Check for Updates:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="check_for_updates" {% if config.check_for_updates %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="illegal_character_replacement">Illegal Character Replacement:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="illegal_character_replacement" value="{{ config.illegal_character_replacement }}" placeholder="Enter character for replacement">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="raw_media_download">Skip Media Conversion:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="raw_media_download" {% if config.raw_media_download %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="rotate_active_account_number">Rotate Active Account:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="rotate_active_account_number" {% if config.rotate_active_account_number %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_delay">Download Delay (seconds):</label>
-                    </td>
-                    <td>
-                        <input type="number" id="download_delay" value="{{ config.download_delay }}" placeholder="Enter download delay">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_chunk_size">Download Chunk Size (bytes):</label>
-                    </td>
-                    <td>
-                        <input type="number" id="download_chunk_size" value="{{ config.download_chunk_size }}" placeholder="Enter chunk size">
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="maximum_queue_workers">Maximum Queue Workers:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="number" id="maximum_queue_workers" value="{{ config.maximum_queue_workers }}" placeholder="Enter max queue workers">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="maximum_download_workers">Maximum Download Workers:</label>
-                    </td>
-                    <td>
-                        <input type="number" id="maximum_download_workers" value="{{ config.maximum_download_workers }}" placeholder="Enter max download workers">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="enable_retry_worker">Enable Retry Worker:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="enable_retry_worker" {% if config.enable_retry_worker %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="retry_worker_delay">Retry Worker Delay (minutes):</label>
-                    </td>
-                    <td>
-                        <input type="number" id="retry_worker_delay" value="{{ config.retry_worker_delay }}" placeholder="Enter retry delay">
-                    </td>
-                </tr>
-            </table>
-
-            <h2>Audio Downloads</h2>
-
-            <table>
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="audio_download_path">Audio Download Path:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="text" id="audio_download_path" value="{{ config.audio_download_path }}" placeholder="Enter audio download path">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="track_file_format">Track File Format:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="track_file_format" value="{{ config.track_file_format }}" placeholder="Enter track file format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="track_path_formatter">Track Path Formatter:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="track_path_formatter" value="{{ config.track_path_formatter }}" placeholder="Enter track path format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="podcast_file_format">Podcast File Format:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="podcast_file_format" value="{{ config.podcast_file_format }}" placeholder="Enter podcast file format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="podcast_path_formatter">Podcast Path Formatter:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="podcast_path_formatter" value="{{ config.podcast_path_formatter }}" placeholder="Enter podcast path format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="use_playlist_path">Use Playlist Path:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="use_playlist_path" {% if config.use_playlist_path %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="playlist_path_formatter">Playlist Path Formatter:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="playlist_path_formatter" value="{{ config.playlist_path_formatter }}" placeholder="Enter playlist path format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="create_m3u_file">Create M3U File:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="create_m3u_file" {% if config.create_m3u_file %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="m3u_path_formatter">M3U Path Formatter:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="m3u_path_formatter" value="{{ config.m3u_path_formatter }}" placeholder="Enter M3U path format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="extinf_separator">EXTINF Separator:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="extinf_separator" value="{{ config.extinf_separator }}" placeholder="Enter EXTINF metadata separator">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="extinf_label">EXTINF Label:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="extinf_label" value="{{ config.extinf_label }}" placeholder="Enter EXTINF label format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="save_album_cover">Save Album Cover:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="save_album_cover" {% if config.save_album_cover %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="album_cover_format">Album Cover Format:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="album_cover_format" value="{{ config.album_cover_format }}" placeholder="Enter album cover format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="file_bitrate">File Bitrate:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="file_bitrate" value="{{ config.file_bitrate }}" placeholder="Enter file bitrate">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="file_hertz">File Hertz:</label>
-                    </td>
-                    <td>
-                        <input type="number" id="file_hertz" value="{{ config.file_hertz }}" placeholder="Enter file hertz">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="use_custom_file_bitrate">Use Custom File Bitrate:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="use_custom_file_bitrate" {% if config.use_custom_file_bitrate %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_lyrics">Enable Lyrics Download:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_lyrics" {% if config.download_lyrics %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="only_download_synced_lyrics">Only Download Synced Lyrics:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="only_download_synced_lyrics" {% if config.only_download_synced_lyrics %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="only_download_plain_lyrics">Only Download Plain Lyrics:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="only_download_plain_lyrics" {% if config.only_download_plain_lyrics %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="save_lrc_file">Save LRC File:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="save_lrc_file" {% if config.save_lrc_file %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="translate_file_path">Translate File Path:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="checkbox" class="sliding_button" id="translate_file_path" {% if config.translate_file_path %}checked{% endif %}>
-                    </td>
-                </tr>
-            </table>
-
-            <h2>Audio Metadata</h2>
-
-            <table>
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="metadata_separator">Metadata Separator:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="text" id="metadata_separator" value="{{ config.metadata_separator }}" placeholder="Enter metadata separator">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="overwrite_existing_metadata">Overwrite Existing Metadata:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="overwrite_existing_metadata" {% if config.overwrite_existing_metadata %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_branding">Embed Branding:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_branding" {% if config.embed_branding %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_cover">Embed Cover:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_cover" {% if config.embed_cover %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_artist">Embed Artist:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_artist" {% if config.embed_artist %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_album">Embed Album:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_album" {% if config.embed_album %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_albumartist">Embed Album Artist:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_albumartist" {% if config.embed_albumartist %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_name">Embed Name:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_name" {% if config.embed_name %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_year">Embed Year:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_year" {% if config.embed_year %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_discnumber">Embed Disc Number:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_discnumber" {% if config.embed_discnumber %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_tracknumber">Embed Track Number:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_tracknumber" {% if config.embed_tracknumber %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_genre">Embed Genre:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_genre" {% if config.embed_genre %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_performers">Embed Performers:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_performers" {% if config.embed_performers %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_producers">Embed Producers:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_producers" {% if config.embed_producers %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_writers">Embed Writers:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_writers" {% if config.embed_writers %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_label">Embed Label:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_label" {% if config.embed_label %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_copyright">Embed Copyright:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_copyright" {% if config.embed_copyright %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_description">Embed Description:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_description" {% if config.embed_description %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_language">Embed Language:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_language" {% if config.embed_language %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_isrc">Embed ISRC:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_isrc" {% if config.embed_isrc %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_length">Embed Length:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_length" {% if config.embed_length %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_url">Embed URL:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_url" {% if config.embed_url %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_key">Embed Key:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_key" {% if config.embed_key %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="embed_bpm">Embed BPM:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="checkbox" class="sliding_button" id="embed_bpm" {% if config.embed_bpm %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_compilation">Embed Compilation:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_compilation" {% if config.embed_compilation %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_lyrics">Embed Lyrics:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_lyrics" {% if config.embed_lyrics %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_explicit">Embed Explicit:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_explicit" {% if config.embed_explicit %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_upc">Embed UPC:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_upc" {% if config.embed_upc %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_service_id">Embed Service ID:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_service_id" {% if config.embed_service_id %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_timesignature">Embed Time Signature:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_timesignature" {% if config.embed_timesignature %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_acousticness">Embed Acousticness:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_acousticness" {% if config.embed_acousticness %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_danceability">Embed Danceability:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_danceability" {% if config.embed_danceability %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_energy">Embed Energy:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_energy" {% if config.embed_energy %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_instrumentalness">Embed Instrumentalness:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_instrumentalness" {% if config.embed_instrumentalness %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_liveness">Embed Liveness:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_liveness" {% if config.embed_liveness %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_loudness">Embed Loudness:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_loudness" {% if config.embed_loudness %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_speechiness">Embed Speechiness:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_speechiness" {% if config.embed_speechiness %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="embed_valence">Embed Valence:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="embed_valence" {% if config.embed_valence %}checked{% endif %}>
-                    </td>
-                </tr>
-            </table>
-
-            <h2>Video Downloads</h2>
-            <table>
-                <tr>
-                    <td style="width: 50%;">
-                        <label for="video_download_path">Video Download Path:</label>
-                    </td>
-                    <td style="width: 50%;">
-                        <input type="text" id="video_download_path" value="{{ config.video_download_path }}" placeholder="Enter video download path">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="movie_file_format">Movie File Format:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="movie_file_format" value="{{ config.movie_file_format }}" placeholder="Enter movie file format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="movie_path_formatter">Movie Path Formatter:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="movie_path_formatter" value="{{ config.movie_path_formatter }}" placeholder="Enter movie path format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="show_file_format">Show File Format:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="show_file_format" value="{{ config.show_file_format }}" placeholder="Enter show file format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="show_path_formatter">Show Path Formatter:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="show_path_formatter" value="{{ config.show_path_formatter }}" placeholder="Enter show path format">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="preferred_video_resolution">Preferred Video Resolution:</label>
-                    </td>
-                    <td>
-                        <input type="number" id="preferred_video_resolution" value="{{ config.preferred_video_resolution }}" placeholder="Enter max video resolution">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_subtitles">Download Subtitles:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_subtitles" {% if config.download_subtitles %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="preferred_audio_language">Preferred Audio Language:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="preferred_audio_language" value="{{ config.preferred_audio_language }}" placeholder="Enter preferred audio language">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="preferred_subtitle_language">Preferred Subtitle Language:</label>
-                    </td>
-                    <td>
-                        <input type="text" id="preferred_subtitle_language" value="{{ config.preferred_subtitle_language }}" placeholder="Enter preferred subtitle language">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_all_available_audio">Download All Available Audio:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_all_available_audio" {% if config.download_all_available_audio %}checked{% endif %}>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="download_all_available_subtitles">Download All Available Subtitles:</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="sliding_button" id="download_all_available_subtitles" {% if config.download_all_available_subtitles %}checked{% endif %}>
-                    </td>
-                </tr>
-            </table>
-        </form>
 
         <script>
-            function returnSettingsData() {
-                const activeAccountNumber = document.querySelector('input[name="active_account_number"]:checked')
-                    ? document.querySelector('input[name="active_account_number"]:checked').value
-                    : '';
-
-                const settingsData = {
-                    // Account Settings
-                    active_account_number: activeAccountNumber,
-                    // Web UI Settings
-                    use_webui_login: document.getElementById('use_webui_login').checked,
-                    webui_username: document.getElementById('webui_username').value,
-                    webui_password: document.getElementById('webui_password').value,
-                    // General Settings
-                    explicit_label: document.getElementById('explicit_label').value,
-                    download_copy_btn: document.getElementById('download_copy_btn').checked,
-                    download_open_btn: document.getElementById('download_open_btn').checked,
-                    download_locate_btn: document.getElementById('download_locate_btn').checked,
-                    download_delete_btn: document.getElementById('download_delete_btn').checked,
-                    show_search_thumbnails: document.getElementById('show_search_thumbnails').checked,
-                    show_download_thumbnails: document.getElementById('show_download_thumbnails').checked,
-                    thumbnail_size: document.getElementById('thumbnail_size').value,
-                    max_search_results: document.getElementById('max_search_results').value,
-                    disable_download_popups: document.getElementById('disable_download_popups').checked,
-                    windows_10_explorer_thumbnails: document.getElementById('windows_10_explorer_thumbnails').checked,
-                    mirror_spotify_playback: document.getElementById('mirror_spotify_playback').checked,
-                    close_to_tray: document.getElementById('close_to_tray').checked,
-                    check_for_updates: document.getElementById('check_for_updates').checked,
-                    illegal_character_replacement: document.getElementById('illegal_character_replacement').value,
-                    raw_media_download: document.getElementById('raw_media_download').checked,
-                    rotate_active_account_number: document.getElementById('rotate_active_account_number').checked,
-                    download_delay: document.getElementById('download_delay').value,
-                    download_chunk_size: document.getElementById('download_chunk_size').value,
-                    maximum_queue_workers: document.getElementById('maximum_queue_workers').value,
-                    maximum_download_workers: document.getElementById('maximum_download_workers').value,
-                    enable_retry_worker: document.getElementById('enable_retry_worker').checked,
-                    retry_worker_delay: document.getElementById('retry_worker_delay').value,
-                    // Audio Download Settings
-                    audio_download_path: document.getElementById('audio_download_path').value,
-                    track_file_format: document.getElementById('track_file_format').value,
-                    track_path_formatter: document.getElementById('track_path_formatter').value,
-                    podcast_file_format: document.getElementById('podcast_file_format').value,
-                    podcast_path_formatter: document.getElementById('podcast_path_formatter').value,
-                    use_playlist_path: document.getElementById('use_playlist_path').checked,
-                    playlist_path_formatter: document.getElementById('playlist_path_formatter').value,
-                    create_m3u_file: document.getElementById('create_m3u_file').checked,
-                    m3u_path_formatter: document.getElementById('m3u_path_formatter').value,
-                    extinf_separator: document.getElementById('extinf_separator').value,
-                    extinf_label: document.getElementById('extinf_label').value,
-                    save_album_cover: document.getElementById('save_album_cover').checked,
-                    album_cover_format: document.getElementById('album_cover_format').value,
-                    file_bitrate: document.getElementById('file_bitrate').value,
-                    file_hertz: document.getElementById('file_hertz').value,
-                    use_custom_file_bitrate: document.getElementById('use_custom_file_bitrate').checked,
-                    download_lyrics: document.getElementById('download_lyrics').checked,
-                    only_download_synced_lyrics: document.getElementById('only_download_synced_lyrics').checked,
-                    only_download_plain_lyrics: document.getElementById('only_download_plain_lyrics').checked,
-                    save_lrc_file: document.getElementById('save_lrc_file').checked,
-                    translate_file_path: document.getElementById('translate_file_path').checked,
-                    // Audio Metadata Settings
-                    metadata_separator: document.getElementById('metadata_separator').value,
-                    overwrite_existing_metadata: document.getElementById('overwrite_existing_metadata').checked,
-                    embed_branding: document.getElementById('embed_branding').checked,
-                    embed_cover: document.getElementById('embed_cover').checked,
-                    embed_artist: document.getElementById('embed_artist').checked,
-                    embed_album: document.getElementById('embed_album').checked,
-                    embed_albumartist: document.getElementById('embed_albumartist').checked,
-                    embed_name: document.getElementById('embed_name').checked,
-                    embed_year: document.getElementById('embed_year').checked,
-                    embed_discnumber: document.getElementById('embed_discnumber').checked,
-                    embed_tracknumber: document.getElementById('embed_tracknumber').checked,
-                    embed_genre: document.getElementById('embed_genre').checked,
-                    embed_performers: document.getElementById('embed_performers').checked,
-                    embed_producers: document.getElementById('embed_producers').checked,
-                    embed_writers: document.getElementById('embed_writers').checked,
-                    embed_label: document.getElementById('embed_label').checked,
-                    embed_copyright: document.getElementById('embed_copyright').checked,
-                    embed_description: document.getElementById('embed_description').checked,
-                    embed_language: document.getElementById('embed_language').checked,
-                    embed_isrc: document.getElementById('embed_isrc').checked,
-                    embed_length: document.getElementById('embed_length').checked,
-                    embed_url: document.getElementById('embed_url').checked,
-                    embed_key: document.getElementById('embed_key').checked,
-                    embed_bpm: document.getElementById('embed_bpm').checked,
-                    embed_compilation: document.getElementById('embed_compilation').checked,
-                    embed_lyrics: document.getElementById('embed_lyrics').checked,
-                    embed_explicit: document.getElementById('embed_explicit').checked,
-                    embed_upc: document.getElementById('embed_upc').checked,
-                    embed_service_id: document.getElementById('embed_service_id').checked,
-                    embed_timesignature: document.getElementById('embed_timesignature').checked,
-                    embed_acousticness: document.getElementById('embed_acousticness').checked,
-                    embed_danceability: document.getElementById('embed_danceability').checked,
-                    embed_energy: document.getElementById('embed_energy').checked,
-                    embed_instrumentalness: document.getElementById('embed_instrumentalness').checked,
-                    embed_liveness: document.getElementById('embed_liveness').checked,
-                    embed_loudness: document.getElementById('embed_loudness').checked,
-                    embed_speechiness: document.getElementById('embed_speechiness').checked,
-                    embed_valence: document.getElementById('embed_valence').checked,
-                    // Video Download Settings
-                    video_download_path: document.getElementById('video_download_path').value,
-                    movie_file_format: document.getElementById('movie_file_format').value,
-                    movie_path_formatter: document.getElementById('movie_path_formatter').value,
-                    show_file_format: document.getElementById('show_file_format').value,
-                    show_path_formatter: document.getElementById('show_path_formatter').value,
-                    preferred_video_resolution: document.getElementById('preferred_video_resolution').value,
-                    download_subtitles: document.getElementById('download_subtitles').checked,
-                    preferred_audio_language: document.getElementById('preferred_audio_language').value,
-                    preferred_subtitle_language: document.getElementById('preferred_subtitle_language').value,
-                    download_all_available_audio: document.getElementById('download_all_available_audio').checked,
-                    download_all_available_subtitles: document.getElementById('download_all_available_subtitles').checked,
-                };
-                return settingsData
-            }
-
-            function handleServiceChange() {
-
-                const loginServices = document.getElementById('login_services');
-                const loginUsername = document.getElementById('login_username');
-                const loginPassword = document.getElementById('login_password');
-                const loginButton = document.getElementById('login_button');
-                const loginNotice = document.getElementById('login_notice');
-
-                if (loginServices.value === 'apple_music') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'block';
-                    loginPassword.placeholder = 'Enter your user-media-token';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Account'
-                    loginNotice.style.display = 'none';
-                }
-                else if (loginServices.value === 'bandcamp') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'none';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Public Bandcamp Account'
-                    loginNotice.style.display = 'none';
-                }
-                else if (loginServices.value === 'deezer') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'block';
-                    loginPassword.placeholder = 'Enter your arl';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Account'
-                    loginNotice.style.display = 'none';
-                }
-                else if (loginServices.value === 'qobuz') {
-                    loginUsername.style.display = 'block';
-                    loginUsername.placeholder = 'Enter your email';
-                    loginPassword.style.display = 'block';
-                    loginPassword.placeholder = 'Enter your password';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Account'
-                    loginNotice.style.display = 'none';
-                }
-                else if (loginServices.value === 'soundcloud') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'block';
-                    loginPassword.placeholder = 'Enter your oauth-token';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Account'
-                    loginNotice.style.display = 'none';
-                }
-                else if (loginServices.value === 'spotify') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'none';
-                    loginButton.style.display = 'none'
-                    loginNotice.style.display = 'block';
-                    loginNotice.textContent = 'Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.';
-                }
-                else if (loginServices.value === 'tidal') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'none';
-                    loginButton.style.display = 'none'
-                    loginNotice.style.display = 'block';
-                    loginNotice.textContent = 'Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.';
-                }
-                else if (loginServices.value === 'youtube_music') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'none';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Public Youtube Music Account'
-                    loginNotice.style.display = 'none';
-                }
-                else if (loginServices.value === 'crunchyroll') {
-                    loginUsername.style.display = 'block';
-                    loginUsername.placeholder = 'Enter your email';
-                    loginPassword.style.display = 'block';
-                    loginPassword.placeholder = 'Enter your password';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Account'
-                    loginNotice.style.display = 'none';
-                }
-                else if (loginServices.value === 'generic') {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'none';
-                    loginButton.style.display = 'block'
-                    loginButton.textContent = 'Add Generic Account'
-                    loginNotice.style.display = 'none';
-                }
-                else {
-                    loginUsername.style.display = 'none';
-                    loginPassword.style.display = 'none';
-                    loginButton.style.display = 'none'
-                    loginNotice.style.display = 'none'
-                }
-            }
-
-            function addAccount() {
-                const selectedService = document.getElementById('login_services').value;
-                const loginUsername = document.getElementById('login_username').value;
-                const loginPassword = document.getElementById('login_password').value;
-
-                const data = {
-                    username: loginUsername,
-                    password: loginPassword,
-                    service: selectedService
-                };
-
-                // Post the data to the endpoint
-                fetch('/api/add_account', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('settingsApp', () => ({
+                    config: {{ config | tojson }},
+                    newAccount: {
+                        service: 'qobuz',
+                        username: '',
+                        password: ''
                     },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Success:', data);
-                    alert('Account added successfully! Please restart the app.');
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-            }
-            function removeAccount(accountId) {
-                fetch(`/api/remove_account/${accountId}`, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Account removed successfully! Please restart the app.');
+                    showUsernameInput: true,
+                    showPasswordInput: true,
+                    showAddButton: true,
+                    showNotice: false,
+                    usernamePlaceholder: 'Enter your email',
+                    passwordPlaceholder: 'Enter your password',
+                    addButtonText: 'Add Account',
+                    noticeText: '',
+
+                    init() {
+                        this.handleServiceChange();
+                    },
+
+                    saveSettings() {
+                        // The config object bound via x-model contains everything.
+                        updateSettings(this.config);
+                    },
+
+                    handleServiceChange() {
+                        const s = this.newAccount.service;
+                        this.showUsernameInput = false;
+                        this.showPasswordInput = false;
+                        this.showAddButton = false;
+                        this.showNotice = false;
+                        
+                        if (s === 'apple_music') {
+                            this.showPasswordInput = true;
+                            this.passwordPlaceholder = 'Enter your user-media-token';
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Account';
+                        } else if (s === 'bandcamp') {
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Public Bandcamp Account';
+                        } else if (s === 'deezer') {
+                            this.showPasswordInput = true;
+                            this.passwordPlaceholder = 'Enter your arl';
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Account';
+                        } else if (s === 'qobuz') {
+                            this.showUsernameInput = true;
+                            this.usernamePlaceholder = 'Enter your email';
+                            this.showPasswordInput = true;
+                            this.passwordPlaceholder = 'Enter your password';
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Account';
+                        } else if (s === 'soundcloud') {
+                            this.showPasswordInput = true;
+                            this.passwordPlaceholder = 'Enter your oauth-token';
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Account';
+                        } else if (s === 'spotify') {
+                            this.showNotice = true;
+                            this.noticeText = 'Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.';
+                        } else if (s === 'tidal') {
+                            this.showNotice = true;
+                            this.noticeText = 'Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.';
+                        } else if (s === 'youtube_music') {
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Public Youtube Music Account';
+                        } else if (s === 'crunchyroll') {
+                            this.showUsernameInput = true;
+                            this.usernamePlaceholder = 'Enter your email';
+                            this.showPasswordInput = true;
+                            this.passwordPlaceholder = 'Enter your password';
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Account';
+                        } else if (s === 'generic') {
+                            this.showAddButton = true;
+                            this.addButtonText = 'Add Generic Account';
+                        }
+                    },
+
+                    addAccount() {
+                        fetch('/api/add_account', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.newAccount)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Success:', data);
+                            alert('Account added successfully! Please restart the app.');
+                        })
+                        .catch(error => console.error('Error:', error));
+                    },
+
+                    removeAccount(accountId) {
+                        fetch(`/api/remove_account/${accountId}`, { method: 'DELETE' })
+                        .then(response => {
+                            if (response.ok) {
+                                alert('Account removed successfully! Please restart the app.');
+                            }
+                        });
                     }
-                })
-            }
+                }));
+            });
         </script>
     </body>
 </html>

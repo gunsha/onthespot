@@ -1,78 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-background text-white font-sans">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - About</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
+        <script src="{{ url_for('static', filename='twind.js') }}"></script>
+        <script src="{{ url_for('static', filename='twind-setup.js') }}"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body>
-        <div class="header">
-            <ul>
-                <li class="hide-on-mobile"><a href="https://github.com/justin025/onthespot/" target="_blank">OnTheSpot</a></li>
-                <li><a href="/search">Search</a></li>
-                <li><a href="/download_queue">Downloads</a></li>
-                <li><a href="/settings">Settings</a></li>
-                <li><a class="active" href="/about">About</a></li>
-            </ul>
-        </div>
-
-        <br>
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-            <div style="display: flex; align-items: center;">
-                <p style="margin-right: 15px; margin-left: 15px;">Version: {{ version }}</p>
-                <p>|</p>
-                <p style="margin-right: 5px; margin-left: 15px;">Total Downloads: {{ statistics }}</p>
+    <body x-data="{
+        clearCache() {
+            fetch('/api/clear_cache', { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) alert('Cache cleared successfully!');
+            });
+        }
+    }" class="m-0 flex flex-col items-center">
+        <div class="w-full">
+            <div class="bg-[#1e1e1e] p-2.5 border border-[#333] rounded-[5px] m-2">
+                <ul class="list-none p-0 m-0 flex">
+                    <li class="hidden sm:block mr-[15px]"><a href="https://github.com/justin025/onthespot/" target="_blank" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">OnTheSpot</a></li>
+                    <li class="mr-[15px]"><a href="/search" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">Search</a></li>
+                    <li class="mr-[15px]"><a href="/download_queue" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">Downloads</a></li>
+                    <li class="mr-[15px]"><a href="/settings" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">Settings</a></li>
+                    <li class="mr-[15px]"><a href="/about" class="no-underline px-[15px] py-2 rounded-[5px] bg-accent text-[#121212]">About</a></li>
+                </ul>
             </div>
 
-            <div style="display: flex; align-items: center;">
-                <button onclick="clearCache()" class="download-action-button" class="hide-on-mobile" style="margin-right: 5px;">
-                    <img id="collapse_button_icon" src="/icons/trash.png" loading="lazy" style="width: 15px; height: 15px;">
-                    Clear Cache
-                </button>
-                <button onclick="window.location.href='/api/download/logs';" class="download-action-button" class="hide-on-mobile" style="margin-right: 5px;">
-                    <img id="collapse_button_icon" src="/icons/export_file.png" loading="lazy" style="width: 15px; height: 15px;">
-                    Export Logs
-                </button>
-                <button href="https://justin025.github.io/about.html" onclick="window.open('https://justin025.github.io/about.html', '_blank');" class="download-action-button" class="hide-on-mobile" style="margin-right: 5px;">
-                    <img id="collapse_button_icon" src="/icons/filled_heart.png" loading="lazy" style="width: 15px; height: 15px;">
-                    Donate
-                </button>
-            </div>
-        </div>
+            <br>
+            <div class="flex items-center justify-between mb-[15px] px-2">
+                <div class="flex items-center">
+                    <p class="mx-[15px]">Version: {{ version }}</p>
+                    <p>|</p>
+                    <p class="mx-[15px] mr-[5px]">Total Downloads: {{ statistics }}</p>
+                </div>
 
-        <h1 align="center">Disclaimer</h1>
-        <br>
-        <p style="font-size: 14pt; width: 70%; margin: 0 auto; text-align: center;">
-            OnTheSpot is strictly intended for educational, private and fair use only in compliance with the
-            <a href="https://www.copyright.gov/dmca/" style="text-decoration: underline; color:#64B5F6;">
-                Digital Millennium Copyright Act (DMCA), Section 1201
-            </a>
-            . It is not affiliated with or endorsed by any music streaming services or platforms.
-            The contributors / developers of OnTheSpot are not responsible for  any misuse of the
-            program or source code.  Users are solely responsible for ensuring that their use of
-            OnTheSpot complies with all relevant/applicable laws in their country.The creators
-            and contributors of OnTheSpot assume no liability for any misuse of legal terms
-            associated with the application or its source code. Licensed under GPL-2.0.
+                <div class="flex items-center">
+                    <button @click="clearCache()" class="hidden sm:inline-flex items-center border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-[5px]">
+                        <img src="/icons/trash.png" loading="lazy" class="w-[15px] h-[15px] mr-1">
+                        Clear Cache
+                    </button>
+                    <button @click="window.location.href='/api/download/logs';" class="hidden sm:inline-flex items-center border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-[5px]">
+                        <img src="/icons/export_file.png" loading="lazy" class="w-[15px] h-[15px] mr-1">
+                        Export Logs
+                    </button>
+                    <button @click="window.open('https://justin025.github.io/about.html', '_blank');" class="hidden sm:inline-flex items-center border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-[5px]">
+                        <img src="/icons/filled_heart.png" loading="lazy" class="w-[15px] h-[15px] mr-1">
+                        Donate
+                    </button>
+                </div>
+            </div>
+
+            <h1 class="text-center">Disclaimer</h1>
             <br>
-            <br>
-            <a href="https://justin025.github.io/about.html" style="text-decoration: underline; color:#64B5F6;">
-                <strong>Donate <3</strong>
-            </a>
-        </p>
-        <script>
-            function clearCache() {
-                fetch('/api/clear_cache', {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Cache cleared successfully!');
-                        }
-                });
-            }
-        </script>
+            <p class="text-[14pt] w-[70%] mx-auto text-center">
+                OnTheSpot is strictly intended for educational, private and fair use only in compliance with the
+                <a href="https://www.copyright.gov/dmca/" class="underline text-[#64B5F6]">
+                    Digital Millennium Copyright Act (DMCA), Section 1201
+                </a>
+                . It is not affiliated with or endorsed by any music streaming services or platforms.
+                The contributors / developers of OnTheSpot are not responsible for  any misuse of the
+                program or source code.  Users are solely responsible for ensuring that their use of
+                OnTheSpot complies with all relevant/applicable laws in their country. The creators
+                and contributors of OnTheSpot assume no liability for any misuse of legal terms
+                associated with the application or its source code. Licensed under GPL-2.0.
+                <br>
+                <br>
+                <a href="https://justin025.github.io/about.html" class="underline text-[#64B5F6]">
+                    <strong>Donate &lt;3</strong>
+                </a>
+            </p>
+        </div>
     </body>
 </html>

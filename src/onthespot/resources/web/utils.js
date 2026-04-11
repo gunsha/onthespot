@@ -16,6 +16,7 @@ function copyToClipboard(text) {
 }
 
 function formatServiceName(serviceName) {
+    if(!serviceName) return '';
     const spacedServiceName = serviceName.replace(/_/g, ' ');
 
     const formattedServiceName = spacedServiceName.split(' ')
@@ -23,24 +24,6 @@ function formatServiceName(serviceName) {
         .join(' ');
 
     return formattedServiceName;
-}
-
-function createButton(iconSrc, altText, onClickHandler, url = null) {
-    if (url) {
-        return `
-            <button class="download-action-button" onclick="${onClickHandler}">
-                <a href="${url}" onclick="event.preventDefault();">
-                    <img src="${iconSrc}" loading="lazy" alt="${altText}">
-                </a>
-            </button>
-        `;
-    } else {
-        return `
-            <button class="download-action-button" onclick="${onClickHandler}">
-                <img src="${iconSrc}" loading="lazy" alt="${altText}">
-            </button>
-        `;
-    }
 }
 
 function updateSettings(data) {
@@ -63,17 +46,4 @@ function updateSettings(data) {
     .catch((error) => {
         console.error('Error:', error);
     });
-}
-
-function toggleVisibility() {
-    const div = document.getElementById('toggle_visibility');
-    const img = document.getElementById('collapse_button_icon');
-    // Check current display style and toggle
-    if (div.style.display === 'none' || div.style.display === '') {
-        div.style.display = 'block'; // Show the div
-        img.src = '/icons/collapse_up.png'
-    } else {
-        div.style.display = 'none'; // Hide the div
-        img.src = '/icons/collapse_down.png'
-    }
 }
