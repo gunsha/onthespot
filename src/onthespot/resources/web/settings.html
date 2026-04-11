@@ -6,18 +6,18 @@
         <title>OnTheSpot - Settings</title>
         <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link href="{{ url_for('static', filename='daisyui.min.css') }}" rel="stylesheet" type="text/css" />
+        <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10">
+    <body class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10">
         <div class="w-full max-w-full overflow-hidden p-2" x-data="settingsApp()">
-            <ul class="menu menu-horizontal bg-base-200 rounded-box flex-nowrap shadow-md overflow-x-auto w-full mb-4">
-                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-300 font-bold">OnTheSpot</a></li>
-                <li><a href="/search" class="hover:bg-base-300">Search</a></li>
-                <li><a href="/download_queue" class="hover:bg-base-300">Downloads</a></li>
-                <li><a href="/settings" class="active !text-white !bg-primary border-none">Settings</a></li>
-                <li><a href="/about" class="hover:bg-base-300">About</a></li>
+            <ul class="menu menu-horizontal bg-base-100 rounded-box flex-nowrap shadow-lg overflow-x-auto w-full mb-4">
+                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-200 font-bold">OnTheSpot</a></li>
+                <li><a href="/search" class="hover:bg-base-200">Search</a></li>
+                <li><a href="/download_queue" class="hover:bg-base-200">Downloads</a></li>
+                <li><a href="/settings" class="active bg-primary text-primary-content shadow-sm font-semibold pointer-events-none">Settings</a></li>
+                <li><a href="/about" class="hover:bg-base-200">About</a></li>
             </ul>
 
             <div class="flex items-center justify-between mb-4 px-2">
@@ -39,8 +39,8 @@
 
             <form @submit.prevent>
                 <div class="w-full overflow-x-auto mb-5">
-                    <table class="table table-zebra table-sm sm:table-md w-full min-w-[700px] shadow-lg rounded-box bg-base-200">
-                        <thead class="bg-base-300 text-base-content text-sm">
+                    <table class="table table-zebra table-sm sm:table-md w-full min-w-[700px] shadow-lg rounded-box bg-base-100">
+                        <thead class="bg-base-200 text-base-content text-sm">
                             <tr>
                                 <th>Active</th>
                                 <th>Username</th>
@@ -142,7 +142,7 @@
 
             <form id="settings-form" @submit.prevent>
 
-                <div class="card bg-base-200 shadow-xl mb-6 mx-2 mt-6">
+                <div class="card bg-base-100 shadow-xl mb-6 mx-2 mt-6">
                     <div class="card-body p-4 sm:p-6">
                         <h2 class="card-title text-xl mb-4">Web UIs</h2>
                         <div class="w-full overflow-x-auto">
@@ -161,7 +161,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
                     <div class="card-body p-4 sm:p-6">
                         <h2 class="card-title text-xl mb-4">General</h2>
                         <div class="w-full overflow-x-auto">
@@ -200,7 +200,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
                     <div class="card-body p-4 sm:p-6">
                         <h2 class="card-title text-xl mb-4">Audio Downloads</h2>
                         <div class="w-full overflow-x-auto">
@@ -237,7 +237,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
                     <div class="card-body p-4 sm:p-6">
                         <h2 class="card-title text-xl mb-4">Audio Metadata</h2>
                         <div class="w-full overflow-x-auto">
@@ -291,7 +291,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
                     <div class="card-body p-4 sm:p-6">
                         <h2 class="card-title text-xl mb-4">Video Downloads</h2>
                         <div class="w-full overflow-x-auto">

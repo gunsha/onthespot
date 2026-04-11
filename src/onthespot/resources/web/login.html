@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Login</title>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link href="{{ url_for('static', filename='daisyui.min.css') }}" rel="stylesheet" type="text/css" />
+        <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
     <body class="flex justify-center mx-auto pt-20 text-center m-0 bg-base-100 min-h-screen">

@@ -140,3 +140,7 @@ dmypy.json
 .markdownlintignore
 .markdownlint.json
 .vscode
+
+node_modules
+package.json
+bun.lock

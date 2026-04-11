@@ -6,11 +6,11 @@
         <title>OnTheSpot - Search</title>
         <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link href="{{ url_for('static', filename='daisyui.min.css') }}" rel="stylesheet" type="text/css" />
+        <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10" x-data="{
+    <body class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10" x-data="{
         query: '',
         results: [],
         showFilters: false,
@@ -63,12 +63,12 @@
         }
     }">
         <div class="w-full max-w-full overflow-hidden p-2">
-            <ul class="menu menu-horizontal bg-base-200 rounded-box flex-nowrap shadow-md overflow-x-auto w-full mb-4">
-                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-300 font-bold">OnTheSpot</a></li>
-                <li><a href="/search" class="active !text-white !bg-primary border-none">Search</a></li>
-                <li><a href="/download_queue" class="hover:bg-base-300">Downloads</a></li>
-                <li><a href="/settings" class="hover:bg-base-300">Settings</a></li>
-                <li><a href="/about" class="hover:bg-base-300">About</a></li>
+            <ul class="menu menu-horizontal bg-base-100 rounded-box flex-nowrap shadow-lg overflow-x-auto w-full mb-4">
+                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-200 font-bold">OnTheSpot</a></li>
+                <li><a href="/search" class="active bg-primary text-primary-content shadow-sm font-semibold pointer-events-none">Search</a></li>
+                <li><a href="/download_queue" class="hover:bg-base-200">Downloads</a></li>
+                <li><a href="/settings" class="hover:bg-base-200">Settings</a></li>
+                <li><a href="/about" class="hover:bg-base-200">About</a></li>
             </ul>
 
             <div class="grid grid-cols-[1fr_auto] gap-2 mb-4 px-2 w-full max-w-3xl mx-auto">
@@ -86,9 +86,8 @@
 
             <div x-show="showFilters" style="display: none;" class="mb-4">
                 <div class="divider text-opacity-50">Filters</div>
-                <div class="flex flex-col sm:flex-row items-center justify-between bg-base-200 p-4 rounded-box max-w-3xl mx-auto">
+                <div class="flex flex-col sm:flex-row items-center justify-between bg-base-100 p-4 rounded-box max-w-3xl mx-auto shadow-md">
                     <div class="flex items-center flex-wrap gap-4 outline-none">
-                        <span class="font-semibold hidden sm:inline-flex">Search For:</span>
                         <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Tracks</span> <input type="checkbox" x-model="filters.enable_search_tracks" class="checkbox checkbox-primary checkbox-sm"></label>
                         <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Albums</span> <input type="checkbox" x-model="filters.enable_search_albums" class="checkbox checkbox-primary checkbox-sm"></label>
                         <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Playlists</span> <input type="checkbox" x-model="filters.enable_search_playlists" class="checkbox checkbox-primary checkbox-sm"></label>
@@ -97,16 +96,14 @@
                         <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Podcasts</span> <input type="checkbox" x-model="filters.enable_search_podcasts" class="checkbox checkbox-primary checkbox-sm"></label>
                         <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Audiobooks</span> <input type="checkbox" x-model="filters.enable_search_audiobooks" class="checkbox checkbox-primary checkbox-sm"></label>
                     </div>
-                    <div class="mt-4 sm:mt-0">
-                        <button @click="saveFilters()" class="btn btn-square btn-ghost">
-                            <img src="/icons/save.png" loading="lazy" class="w-5 h-5">
-                        </button>
+                    <div class="mt-4 sm:mt-0 ml-auto flex-shrink-0">
+                        <button @click="saveFilters(); showFilters = false" class="btn btn-primary btn-sm px-6">OK</button>
                     </div>
                 </div>
             </div>
 
             <div class="w-full">
-                <ul class="list bg-base-200 rounded-box shadow-md mx-auto max-w-7xl">
+                <ul class="list bg-base-100 rounded-box shadow-lg mx-auto max-w-7xl">
                     <template x-if="results.length > 0">
                         <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Search Results</li>
                     </template>

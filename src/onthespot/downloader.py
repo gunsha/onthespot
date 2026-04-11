@@ -110,7 +110,7 @@ class DownloadWorker(QObject):
                             iterator = iter(download_queue)
                             while True:
                                 local_id = next(iterator)
-                                if download_queue[local_id]['available'] is False:
+                                if download_queue[local_id]['available'] is False or download_queue[local_id]['item_status'] != 'Waiting':
                                     continue
                                 download_queue[local_id]['available'] = False
                                 item = download_queue[local_id]

@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - About</title>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link href="{{ url_for('static', filename='daisyui.min.css') }}" rel="stylesheet" type="text/css" />
+        <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
     <body x-data="{
@@ -37,14 +37,14 @@
                 if (data.success) alert('Cache cleared successfully!');
             });
         }
-    }" class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10">
+    }" class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10">
         <div class="w-full max-w-full overflow-hidden p-2">
-            <ul class="menu menu-horizontal bg-base-200 rounded-box flex-nowrap shadow-md overflow-x-auto w-full mb-4">
-                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-300 font-bold">OnTheSpot</a></li>
-                <li><a href="/search" class="hover:bg-base-300">Search</a></li>
-                <li><a href="/download_queue" class="hover:bg-base-300">Downloads</a></li>
-                <li><a href="/settings" class="hover:bg-base-300">Settings</a></li>
-                <li><a href="/about" class="active !text-white !bg-primary border-none">About</a></li>
+            <ul class="menu menu-horizontal bg-base-100 rounded-box flex-nowrap shadow-lg overflow-x-auto w-full mb-4">
+                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-200 font-bold">OnTheSpot</a></li>
+                <li><a href="/search" class="hover:bg-base-200">Search</a></li>
+                <li><a href="/download_queue" class="hover:bg-base-200">Downloads</a></li>
+                <li><a href="/settings" class="hover:bg-base-200">Settings</a></li>
+                <li><a href="/about" class="active bg-primary text-primary-content shadow-sm font-semibold pointer-events-none">About</a></li>
             </ul>
 
             <div class="flex flex-col sm:flex-row items-center justify-between mb-8 px-4 gap-4">
@@ -70,7 +70,7 @@
                 </div>
             </div>
 
-            <div class="card bg-base-200 shadow-xl max-w-4xl mx-auto">
+            <div class="card bg-base-100 shadow-xl max-w-4xl mx-auto">
                 <div class="card-body items-center text-center">
                     <h2 class="card-title text-2xl mb-4">Disclaimer</h2>
                     <p class="text-lg">
