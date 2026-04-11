@@ -1,32 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-background text-white font-sans">
+<html lang="en" data-theme="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Login</title>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <script src="{{ url_for('static', filename='twind.js') }}"></script>
-        <script src="{{ url_for('static', filename='twind-setup.js') }}"></script>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.tailwindcss.com"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body class="flex justify-center mx-auto pt-20 text-center m-0">
-        <div class="mx-auto text-center w-full max-w-[600px]">
-            <h1>OnTheSpot - Login</h1>
-            <div class="inline-block align-middle md:mr-4">
+    <body class="flex justify-center mx-auto pt-20 text-center m-0 bg-base-100 min-h-screen">
+        <div class="mx-auto text-center w-full max-w-[600px] p-4">
+            <h1 class="text-3xl font-bold mb-4">OnTheSpot - Login</h1>
+            <div class="inline-block align-middle md:mr-4 mb-4">
                 <img src="icons/onthespot.png" alt="OnTheSpot logo" class="h-[11em]">
             </div>
-            <div class="inline-block align-middle p-2.5 text-left">
-                <form id="loginform" method="POST" class="flex flex-col gap-2.5">
-                    <div class="mb-[5px]">
-                        <label for="username">Username</label><br>
-                        <input type="text" id="username" name="username" autocomplete="username" autofocus="" required="" class="bg-[#1e1e1e] text-white border-2 border-[#1e1e1e] rounded-[10px] text-xs px-3 py-2.5 w-[250px] outline-none focus:border-accent">
+            <div class="inline-block align-middle p-2.5 text-left bg-base-200 rounded-xl shadow-lg w-full max-w-xs">
+                <form id="loginform" method="POST" class="flex flex-col gap-4">
+                    <div class="form-control">
+                        <label for="username" class="label">
+                            <span class="label-text">Username</span>
+                        </label>
+                        <input type="text" id="username" name="username" autocomplete="username" autofocus="" required="" class="input input-bordered w-full focus:input-primary">
                     </div>
-                    <div class="mb-[5px]">
-                        <label for="password">Password</label><br>
-                        <input type="password" id="password" name="password" autocomplete="current-password" required="" class="bg-[#1e1e1e] text-white border-2 border-[#1e1e1e] rounded-[10px] text-xs px-3 py-2.5 w-[250px] outline-none focus:border-accent">
+                    <div class="form-control">
+                        <label for="password" class="label">
+                            <span class="label-text">Password</span>
+                        </label>
+                        <input type="password" id="password" name="password" autocomplete="current-password" required="" class="input input-bordered w-full focus:input-primary">
                     </div>
-                    <div class="mb-[5px] flex justify-end">
-                        <input type="submit" id="loginButton" value="Login" class="bg-[#1e1e1e] text-white border-2 border-[#1e1e1e] rounded-[10px] text-xs px-[20px] py-[12px] focus:border-accent outline-none cursor-pointer">
+                    <div class="form-control mt-2">
+                        <input type="submit" id="loginButton" value="Login" class="btn btn-primary w-full">
                     </div>
                 </form>
             </div>

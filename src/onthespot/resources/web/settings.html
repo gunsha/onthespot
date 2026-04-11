@@ -1,87 +1,88 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-background text-white font-sans">
+<html lang="en" data-theme="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Settings</title>
         <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <script src="{{ url_for('static', filename='twind.js') }}"></script>
-        <script src="{{ url_for('static', filename='twind-setup.js') }}"></script>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.tailwindcss.com"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body class="m-0 flex flex-col items-center">
-        <div class="w-full" x-data="settingsApp()">
-            <div class="bg-[#1e1e1e] p-2.5 border border-[#333] rounded-[5px] m-2">
-                <ul class="list-none p-0 m-0 flex">
-                    <li class="hidden sm:block mr-[15px]"><a href="https://github.com/justin025/onthespot/" target="_blank" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">OnTheSpot</a></li>
-                    <li class="mr-[15px]"><a href="/search" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">Search</a></li>
-                    <li class="mr-[15px]"><a href="/download_queue" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">Downloads</a></li>
-                    <li class="mr-[15px]"><a href="/settings" class="no-underline px-[15px] py-2 rounded-[5px] bg-accent text-[#121212]">Settings</a></li>
-                    <li class="mr-[15px]"><a href="/about" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors hover:bg-[#333]">About</a></li>
-                </ul>
-            </div>
+    <body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10">
+        <div class="w-full max-w-full overflow-hidden p-2" x-data="settingsApp()">
+            <ul class="menu menu-horizontal bg-base-200 rounded-box flex-nowrap shadow-md overflow-x-auto w-full mb-4">
+                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-300 font-bold">OnTheSpot</a></li>
+                <li><a href="/search" class="hover:bg-base-300">Search</a></li>
+                <li><a href="/download_queue" class="hover:bg-base-300">Downloads</a></li>
+                <li><a href="/settings" class="active !text-white !bg-primary border-none">Settings</a></li>
+                <li><a href="/about" class="hover:bg-base-300">About</a></li>
+            </ul>
 
-            <br>
-            <div class="flex items-center justify-between mb-[15px] px-2">
+            <div class="flex items-center justify-between mb-4 px-2">
                 <div class="flex items-center">
                     <h2 class="text-xl font-bold">Account Pool</h2>
                 </div>
 
-                <div class="flex items-center">
+                <div class="flex items-center gap-2">
                     <template x-if="config.use_webui_login">
-                        <button class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-2" @click="window.location.href='/api/logout';">
+                        <button class="btn btn-square btn-ghost" @click="window.location.href='/api/logout';">
                             <img src="/icons/leave.png" loading="lazy" class="w-5 h-5">
                         </button>
                     </template>
-                    <button class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer" @click="saveSettings()">
+                    <button class="btn btn-square btn-ghost" @click="saveSettings()">
                         <img src="/icons/save.png" loading="lazy" class="w-5 h-5">
                     </button>
                 </div>
             </div>
 
             <form @submit.prevent>
-                <table class="w-full border-collapse mb-5">
-                    <thead>
-                        <tr>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Active</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] overflow-hidden whitespace-nowrap overflow-ellipsis">Username</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Service</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] hidden sm:table-cell">Account Type</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Max Resolution</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Status</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] hidden sm:table-cell">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for account in account_pool %}
-                        <tr class="odd:bg-rowOdd even:bg-rowEven">
-                            <td class="border-2 border-[#1f1f1f] p-2 w-[10px]">
-                                <label>
-                                    <input type="radio" name="active_account_number" value="{{ loop.index - 1 }}" x-model="config.active_account_number" @change="saveSettings()">
-                                </label>
-                            </td>
-                            <td class="border-2 border-[#1f1f1f] p-2 max-w-[10px] truncate">{{ account.username }}{% if account.username|length > 20 %}...{% endif %}</td>
-                            <td class="border-2 border-[#1f1f1f] p-2">
-                                <img src="/icons/{{ account.service }}.png" loading="lazy" class="w-5 h-5 mr-[5px] inline-block align-middle">
-                                <span class="hidden sm:inline align-middle">{{ account.service.replace('_', ' ').title() }}</span>
-                            </td>
-                            <td class="border-2 border-[#1f1f1f] p-2 hidden sm:table-cell">{{ account.account_type|capitalize }}</td>
-                            <td class="border-2 border-[#1f1f1f] p-2">{{ account.bitrate }}</td>
-                            <td class="border-2 border-[#1f1f1f] p-2">{{ account.status|capitalize }}</td>
-                            <td class="border-2 border-[#1f1f1f] p-2 hidden sm:table-cell">
-                                <button value="{{ account.uuid }}" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer" @click="removeAccount('{{ account.uuid }}')">
-                                    <img src="/icons/trash.png" loading="lazy" class="w-5 h-5">
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="w-full overflow-x-auto mb-5">
+                    <table class="table table-zebra table-sm sm:table-md w-full min-w-[700px] shadow-lg rounded-box bg-base-200">
+                        <thead class="bg-base-300 text-base-content text-sm">
+                            <tr>
+                                <th>Active</th>
+                                <th>Username</th>
+                                <th>Service</th>
+                                <th class="hidden sm:table-cell">Account Type</th>
+                                <th>Max Resolution</th>
+                                <th>Status</th>
+                                <th class="hidden sm:table-cell">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in account_pool %}
+                            <tr class="hover">
+                                <td>
+                                    <label>
+                                        <input type="radio" name="active_account_number" value="{{ loop.index - 1 }}" x-model="config.active_account_number" @change="saveSettings()" class="radio radio-primary radio-sm">
+                                    </label>
+                                </td>
+                                <td class="max-w-[10px] truncate">{{ account.username }}{% if account.username|length > 20 %}...{% endif %}</td>
+                                <td>
+                                    <div class="flex items-center gap-2">
+                                        <img src="/icons/{{ account.service }}.png" loading="lazy" class="w-5 h-5">
+                                        <span class="hidden sm:inline">{{ account.service.replace('_', ' ').title() }}</span>
+                                    </div>
+                                </td>
+                                <td class="hidden sm:table-cell">{{ account.account_type|capitalize }}</td>
+                                <td>{{ account.bitrate }}</td>
+                                <td>{{ account.status|capitalize }}</td>
+                                <td class="hidden sm:table-cell">
+                                    <button value="{{ account.uuid }}" class="btn btn-square btn-ghost btn-sm" @click="removeAccount('{{ account.uuid }}')">
+                                        <img src="/icons/trash.png" loading="lazy" class="w-4 h-4">
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </form>
 
-            <div class="flex items-center mt-5 px-2">
-                <select id="login_services" x-model="newAccount.service" @change="handleServiceChange()" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent hidden sm:inline-block">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center mt-5 px-2 gap-3">
+                <select id="login_services" x-model="newAccount.service" @change="handleServiceChange()" class="select select-bordered focus:select-primary w-full sm:max-w-xs">
                     <option value="" disabled>Audio:</option>
                     <option value="apple_music">Apple Music</option>
                     <option value="bandcamp">Bandcamp</option>
@@ -96,199 +97,226 @@
                     <option value="crunchyroll">Crunchyroll</option>
                     <option value="generic">Generic</option>
                 </select>
-                <input type="text" x-model="newAccount.username" x-show="showUsernameInput" :placeholder="usernamePlaceholder" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent hidden sm:inline-block">
-                <input type="text" x-model="newAccount.password" x-show="showPasswordInput" :placeholder="passwordPlaceholder" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent hidden sm:inline-block">
-                <button type="button" @click="addAccount()" x-show="showAddButton" x-text="addButtonText" class="hidden sm:inline-block px-5 py-3 ml-2.5 border-none rounded-[10px] bg-accent text-white cursor-pointer text-xs transition-colors hover:bg-[#777]">Add Account</button>
-                <p x-show="showNotice" x-text="noticeText" class="hidden sm:inline-block ml-2.5 mb-0 text-[#ff4444]"></p>
+                <input type="text" x-model="newAccount.username" x-show="showUsernameInput" :placeholder="usernamePlaceholder" class="input input-bordered focus:input-primary w-full sm:max-w-[250px]">
+                <input type="text" x-model="newAccount.password" x-show="showPasswordInput" :placeholder="passwordPlaceholder" class="input input-bordered focus:input-primary w-full sm:max-w-[250px]">
+                <button type="button" @click="addAccount()" x-show="showAddButton" x-text="addButtonText" class="btn btn-primary w-full sm:w-auto">Add Account</button>
+                <p x-show="showNotice" x-text="noticeText" class="text-error text-xs m-0"></p>
             </div>
             <br class="hidden sm:block">
 
             {% macro twind_checkbox(id, label_text) %}
-            <tr>
-                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
-                <td class="border-2 border-[#1f1f1f] p-2">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="{{ id }}" x-model="config.{{ id }}" class="sr-only peer">
-                        <div class="w-[2.5em] h-[1.25em] bg-transparent border border-white rounded-[20px] transition-colors duration-300 peer-checked:bg-accent after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[0.15em] after:bg-current after:border after:border-current after:rounded-full after:h-[1em] after:w-[1em] after:transition-all peer-checked:after:left-[1.2em]"></div>
-                    </label>
+            <tr class="hover">
+                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}" class="cursor-pointer">{{ label_text }}</label></td>
+                <td class="p-3 w-1/2 align-middle">
+                    <input type="checkbox" id="{{ id }}" x-model="config.{{ id }}" class="toggle toggle-primary">
                 </td>
             </tr>
             {% endmacro %}
 
             {% macro twind_text_input(id, label_text, placeholder) %}
-            <tr>
-                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
-                <td class="border-2 border-[#1f1f1f] p-2">
-                    <input type="text" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors duration-300 text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent">
+            <tr class="hover">
+                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
+                <td class="p-3 w-1/2 align-middle">
+                    <input type="text" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md">
                 </td>
             </tr>
             {% endmacro %}
             
             {% macro twind_password_input(id, label_text, placeholder) %}
-            <tr>
-                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
-                <td class="border-2 border-[#1f1f1f] p-2">
-                    <input type="password" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors duration-300 text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent">
+            <tr class="hover">
+                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
+                <td class="p-3 w-1/2 align-middle">
+                    <input type="password" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md">
                 </td>
             </tr>
             {% endmacro %}
 
             {% macro twind_number_input(id, label_text, placeholder) %}
-            <tr>
-                <td class="border-2 border-[#1f1f1f] p-2"><label for="{{ id }}">{{ label_text }}</label></td>
-                <td class="border-2 border-[#1f1f1f] p-2">
-                    <input type="number" id="{{ id }}" x-model.number="config.{{ id }}" placeholder="{{ placeholder }}" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors duration-300 text-xs w-[250px] mr-[5px] px-3 py-2.5 focus:border-accent">
+            <tr class="hover">
+                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
+                <td class="p-3 w-1/2 align-middle">
+                    <input type="number" id="{{ id }}" x-model.number="config.{{ id }}" placeholder="{{ placeholder }}" class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md">
                 </td>
             </tr>
             {% endmacro %}
 
             <form id="settings-form" @submit.prevent>
 
-                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Web UIs</h2>
-                <table class="w-full border-collapse mb-5">
-                    <colgroup>
-                        <col class="w-1/2">
-                        <col class="w-1/2">
-                    </colgroup>
-                    <tbody>
-                        {{ twind_checkbox("use_webui_login", "Enable Web UI Login Page:") }}
-                        {{ twind_text_input("webui_username", "Web UI Username:", "Enter your username") }}
-                        {{ twind_password_input("webui_password", "Web UI Password:", "Enter your password") }}
-                    </tbody>
-                </table>
+                <div class="card bg-base-200 shadow-xl mb-6 mx-2 mt-6">
+                    <div class="card-body p-4 sm:p-6">
+                        <h2 class="card-title text-xl mb-4">Web UIs</h2>
+                        <div class="w-full overflow-x-auto">
+                            <table class="table w-full">
+                                <colgroup>
+                                    <col class="w-1/2">
+                                    <col class="w-1/2">
+                                </colgroup>
+                                <tbody>
+                                    {{ twind_checkbox("use_webui_login", "Enable Web UI Login Page:") }}
+                                    {{ twind_text_input("webui_username", "Web UI Username:", "Enter your username") }}
+                                    {{ twind_password_input("webui_password", "Web UI Password:", "Enter your password") }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">General</h2>
-                <table class="w-full border-collapse mb-5">
-                    <colgroup>
-                        <col class="w-1/2">
-                        <col class="w-1/2">
-                    </colgroup>
-                    <tbody>
-                        {{ twind_text_input("explicit_label", "Explicit Label:", "Enter explicit label") }}
-                        {{ twind_checkbox("download_copy_btn", "Add Copy Button to Downloads:") }}
-                        {{ twind_checkbox("download_open_btn", "Add Open Button to Downloads:") }}
-                        {{ twind_checkbox("download_locate_btn", "Add Locate Button to Downloads:") }}
-                        {{ twind_checkbox("download_delete_btn", "Add Delete Button to Downloads:") }}
-                        {{ twind_checkbox("show_search_thumbnails", "Show Thumbnails in Search View:") }}
-                        {{ twind_checkbox("show_download_thumbnails", "Show Thumbnails in Download View:") }}
-                        {{ twind_number_input("thumbnail_size", "Thumbnail Size (px):", "Enter thumbnail size") }}
-                        {{ twind_number_input("max_search_results", "Max Search Results:", "Enter max search results") }}
-                        {{ twind_checkbox("disable_download_popups", "Hide Download Popups:") }}
-                        {{ twind_checkbox("windows_10_explorer_thumbnails", "Use Old ID3 Format for Windows 10 Explorer:") }}
-                        {{ twind_checkbox("mirror_spotify_playback", "Mirror Spotify Playback:") }}
-                        {{ twind_checkbox("close_to_tray", "Close Application to Tray:") }}
-                        {{ twind_checkbox("check_for_updates", "Check for Updates:") }}
-                        {{ twind_text_input("illegal_character_replacement", "Illegal Character Replacement:", "Enter character for replacement") }}
-                        {{ twind_checkbox("raw_media_download", "Skip Media Conversion:") }}
-                        {{ twind_checkbox("rotate_active_account_number", "Rotate Active Account:") }}
-                        {{ twind_number_input("download_delay", "Download Delay (seconds):", "Enter download delay") }}
-                        {{ twind_number_input("download_chunk_size", "Download Chunk Size (bytes):", "Enter chunk size") }}
-                        {{ twind_number_input("maximum_queue_workers", "Maximum Queue Workers:", "Enter max queue workers") }}
-                        {{ twind_number_input("maximum_download_workers", "Maximum Download Workers:", "Enter max download workers") }}
-                        {{ twind_checkbox("enable_retry_worker", "Enable Retry Worker:") }}
-                        {{ twind_number_input("retry_worker_delay", "Retry Worker Delay (minutes):", "Enter retry delay") }}
-                    </tbody>
-                </table>
+                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                    <div class="card-body p-4 sm:p-6">
+                        <h2 class="card-title text-xl mb-4">General</h2>
+                        <div class="w-full overflow-x-auto">
+                            <table class="table w-full">
+                                <colgroup>
+                                    <col class="w-1/2">
+                                    <col class="w-1/2">
+                                </colgroup>
+                                <tbody>
+                                    {{ twind_text_input("explicit_label", "Explicit Label:", "Enter explicit label") }}
+                                    {{ twind_checkbox("download_copy_btn", "Add Copy Button to Downloads:") }}
+                                    {{ twind_checkbox("download_open_btn", "Add Open Button to Downloads:") }}
+                                    {{ twind_checkbox("download_locate_btn", "Add Locate Button to Downloads:") }}
+                                    {{ twind_checkbox("download_delete_btn", "Add Delete Button to Downloads:") }}
+                                    {{ twind_checkbox("show_search_thumbnails", "Show Thumbnails in Search View:") }}
+                                    {{ twind_checkbox("show_download_thumbnails", "Show Thumbnails in Download View:") }}
+                                    {{ twind_number_input("thumbnail_size", "Thumbnail Size (px):", "Enter thumbnail size") }}
+                                    {{ twind_number_input("max_search_results", "Max Search Results:", "Enter max search results") }}
+                                    {{ twind_checkbox("disable_download_popups", "Hide Download Popups:") }}
+                                    {{ twind_checkbox("windows_10_explorer_thumbnails", "Use Old ID3 Format for Windows 10 Explorer:") }}
+                                    {{ twind_checkbox("mirror_spotify_playback", "Mirror Spotify Playback:") }}
+                                    {{ twind_checkbox("close_to_tray", "Close Application to Tray:") }}
+                                    {{ twind_checkbox("check_for_updates", "Check for Updates:") }}
+                                    {{ twind_text_input("illegal_character_replacement", "Illegal Character Replacement:", "Enter character for replacement") }}
+                                    {{ twind_checkbox("raw_media_download", "Skip Media Conversion:") }}
+                                    {{ twind_checkbox("rotate_active_account_number", "Rotate Active Account:") }}
+                                    {{ twind_number_input("download_delay", "Download Delay (seconds):", "Enter download delay") }}
+                                    {{ twind_number_input("download_chunk_size", "Download Chunk Size (bytes):", "Enter chunk size") }}
+                                    {{ twind_number_input("maximum_queue_workers", "Maximum Queue Workers:", "Enter max queue workers") }}
+                                    {{ twind_number_input("maximum_download_workers", "Maximum Download Workers:", "Enter max download workers") }}
+                                    {{ twind_checkbox("enable_retry_worker", "Enable Retry Worker:") }}
+                                    {{ twind_number_input("retry_worker_delay", "Retry Worker Delay (minutes):", "Enter retry delay") }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Audio Downloads</h2>
-                <table class="w-full border-collapse mb-5">
-                    <colgroup>
-                        <col class="w-1/2">
-                        <col class="w-1/2">
-                    </colgroup>
-                    <tbody>
-                        {{ twind_text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }}
-                        {{ twind_text_input("track_file_format", "Track File Format:", "Enter track file format") }}
-                        {{ twind_text_input("track_path_formatter", "Track Path Formatter:", "Enter track path format") }}
-                        {{ twind_text_input("podcast_file_format", "Podcast File Format:", "Enter podcast file format") }}
-                        {{ twind_text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format") }}
-                        {{ twind_checkbox("use_playlist_path", "Use Playlist Path:") }}
-                        {{ twind_text_input("playlist_path_formatter", "Playlist Path Formatter:", "Enter playlist path format") }}
-                        {{ twind_checkbox("create_m3u_file", "Create M3U File:") }}
-                        {{ twind_text_input("m3u_path_formatter", "M3U Path Formatter:", "Enter M3U path format") }}
-                        {{ twind_text_input("extinf_separator", "EXTINF Separator:", "Enter EXTINF metadata separator") }}
-                        {{ twind_text_input("extinf_label", "EXTINF Label:", "Enter EXTINF label format") }}
-                        {{ twind_checkbox("save_album_cover", "Save Album Cover:") }}
-                        {{ twind_text_input("album_cover_format", "Album Cover Format:", "Enter album cover format") }}
-                        {{ twind_text_input("file_bitrate", "File Bitrate:", "Enter file bitrate") }}
-                        {{ twind_number_input("file_hertz", "File Hertz:", "Enter file hertz") }}
-                        {{ twind_checkbox("use_custom_file_bitrate", "Use Custom File Bitrate:") }}
-                        {{ twind_checkbox("download_lyrics", "Enable Lyrics Download:") }}
-                        {{ twind_checkbox("only_download_synced_lyrics", "Only Download Synced Lyrics:") }}
-                        {{ twind_checkbox("only_download_plain_lyrics", "Only Download Plain Lyrics:") }}
-                        {{ twind_checkbox("save_lrc_file", "Save LRC File:") }}
-                        {{ twind_checkbox("translate_file_path", "Translate File Path:") }}
-                    </tbody>
-                </table>
+                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                    <div class="card-body p-4 sm:p-6">
+                        <h2 class="card-title text-xl mb-4">Audio Downloads</h2>
+                        <div class="w-full overflow-x-auto">
+                            <table class="table w-full">
+                                <colgroup>
+                                    <col class="w-1/2">
+                                    <col class="w-1/2">
+                                </colgroup>
+                                <tbody>
+                                    {{ twind_text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }}
+                                    {{ twind_text_input("track_file_format", "Track File Format:", "Enter track file format") }}
+                                    {{ twind_text_input("track_path_formatter", "Track Path Formatter:", "Enter track path format") }}
+                                    {{ twind_text_input("podcast_file_format", "Podcast File Format:", "Enter podcast file format") }}
+                                    {{ twind_text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format") }}
+                                    {{ twind_checkbox("use_playlist_path", "Use Playlist Path:") }}
+                                    {{ twind_text_input("playlist_path_formatter", "Playlist Path Formatter:", "Enter playlist path format") }}
+                                    {{ twind_checkbox("create_m3u_file", "Create M3U File:") }}
+                                    {{ twind_text_input("m3u_path_formatter", "M3U Path Formatter:", "Enter M3U path format") }}
+                                    {{ twind_text_input("extinf_separator", "EXTINF Separator:", "Enter EXTINF metadata separator") }}
+                                    {{ twind_text_input("extinf_label", "EXTINF Label:", "Enter EXTINF label format") }}
+                                    {{ twind_checkbox("save_album_cover", "Save Album Cover:") }}
+                                    {{ twind_text_input("album_cover_format", "Album Cover Format:", "Enter album cover format") }}
+                                    {{ twind_text_input("file_bitrate", "File Bitrate:", "Enter file bitrate") }}
+                                    {{ twind_number_input("file_hertz", "File Hertz:", "Enter file hertz") }}
+                                    {{ twind_checkbox("use_custom_file_bitrate", "Use Custom File Bitrate:") }}
+                                    {{ twind_checkbox("download_lyrics", "Enable Lyrics Download:") }}
+                                    {{ twind_checkbox("only_download_synced_lyrics", "Only Download Synced Lyrics:") }}
+                                    {{ twind_checkbox("only_download_plain_lyrics", "Only Download Plain Lyrics:") }}
+                                    {{ twind_checkbox("save_lrc_file", "Save LRC File:") }}
+                                    {{ twind_checkbox("translate_file_path", "Translate File Path:") }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Audio Metadata</h2>
-                <table class="w-full border-collapse mb-5">
-                    <colgroup>
-                        <col class="w-1/2">
-                        <col class="w-1/2">
-                    </colgroup>
-                    <tbody>
-                        {{ twind_text_input("metadata_separator", "Metadata Separator:", "Enter metadata separator") }}
-                        {{ twind_checkbox("overwrite_existing_metadata", "Overwrite Existing Metadata:") }}
-                        {{ twind_checkbox("embed_branding", "Embed Branding:") }}
-                        {{ twind_checkbox("embed_cover", "Embed Cover:") }}
-                        {{ twind_checkbox("embed_artist", "Embed Artist:") }}
-                        {{ twind_checkbox("embed_album", "Embed Album:") }}
-                        {{ twind_checkbox("embed_albumartist", "Embed Album Artist:") }}
-                        {{ twind_checkbox("embed_name", "Embed Name:") }}
-                        {{ twind_checkbox("embed_year", "Embed Year:") }}
-                        {{ twind_checkbox("embed_discnumber", "Embed Disc Number:") }}
-                        {{ twind_checkbox("embed_tracknumber", "Embed Track Number:") }}
-                        {{ twind_checkbox("embed_genre", "Embed Genre:") }}
-                        {{ twind_checkbox("embed_performers", "Embed Performers:") }}
-                        {{ twind_checkbox("embed_producers", "Embed Producers:") }}
-                        {{ twind_checkbox("embed_writers", "Embed Writers:") }}
-                        {{ twind_checkbox("embed_label", "Embed Label:") }}
-                        {{ twind_checkbox("embed_copyright", "Embed Copyright:") }}
-                        {{ twind_checkbox("embed_description", "Embed Description:") }}
-                        {{ twind_checkbox("embed_language", "Embed Language:") }}
-                        {{ twind_checkbox("embed_isrc", "Embed ISRC:") }}
-                        {{ twind_checkbox("embed_length", "Embed Length:") }}
-                        {{ twind_checkbox("embed_url", "Embed URL:") }}
-                        {{ twind_checkbox("embed_key", "Embed Key:") }}
-                        {{ twind_checkbox("embed_bpm", "Embed BPM:") }}
-                        {{ twind_checkbox("embed_compilation", "Embed Compilation:") }}
-                        {{ twind_checkbox("embed_lyrics", "Embed Lyrics:") }}
-                        {{ twind_checkbox("embed_explicit", "Embed Explicit:") }}
-                        {{ twind_checkbox("embed_upc", "Embed UPC:") }}
-                        {{ twind_checkbox("embed_service_id", "Embed Service ID:") }}
-                        {{ twind_checkbox("embed_timesignature", "Embed Time Signature:") }}
-                        {{ twind_checkbox("embed_acousticness", "Embed Acousticness:") }}
-                        {{ twind_checkbox("embed_danceability", "Embed Danceability:") }}
-                        {{ twind_checkbox("embed_energy", "Embed Energy:") }}
-                        {{ twind_checkbox("embed_instrumentalness", "Embed Instrumentalness:") }}
-                        {{ twind_checkbox("embed_liveness", "Embed Liveness:") }}
-                        {{ twind_checkbox("embed_loudness", "Embed Loudness:") }}
-                        {{ twind_checkbox("embed_speechiness", "Embed Speechiness:") }}
-                        {{ twind_checkbox("embed_valence", "Embed Valence:") }}
-                    </tbody>
-                </table>
+                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                    <div class="card-body p-4 sm:p-6">
+                        <h2 class="card-title text-xl mb-4">Audio Metadata</h2>
+                        <div class="w-full overflow-x-auto">
+                            <table class="table w-full">
+                                <colgroup>
+                                    <col class="w-1/2">
+                                    <col class="w-1/2">
+                                </colgroup>
+                                <tbody>
+                                    {{ twind_text_input("metadata_separator", "Metadata Separator:", "Enter metadata separator") }}
+                                    {{ twind_checkbox("overwrite_existing_metadata", "Overwrite Existing Metadata:") }}
+                                    {{ twind_checkbox("embed_branding", "Embed Branding:") }}
+                                    {{ twind_checkbox("embed_cover", "Embed Cover:") }}
+                                    {{ twind_checkbox("embed_artist", "Embed Artist:") }}
+                                    {{ twind_checkbox("embed_album", "Embed Album:") }}
+                                    {{ twind_checkbox("embed_albumartist", "Embed Album Artist:") }}
+                                    {{ twind_checkbox("embed_name", "Embed Name:") }}
+                                    {{ twind_checkbox("embed_year", "Embed Year:") }}
+                                    {{ twind_checkbox("embed_discnumber", "Embed Disc Number:") }}
+                                    {{ twind_checkbox("embed_tracknumber", "Embed Track Number:") }}
+                                    {{ twind_checkbox("embed_genre", "Embed Genre:") }}
+                                    {{ twind_checkbox("embed_performers", "Embed Performers:") }}
+                                    {{ twind_checkbox("embed_producers", "Embed Producers:") }}
+                                    {{ twind_checkbox("embed_writers", "Embed Writers:") }}
+                                    {{ twind_checkbox("embed_label", "Embed Label:") }}
+                                    {{ twind_checkbox("embed_copyright", "Embed Copyright:") }}
+                                    {{ twind_checkbox("embed_description", "Embed Description:") }}
+                                    {{ twind_checkbox("embed_language", "Embed Language:") }}
+                                    {{ twind_checkbox("embed_isrc", "Embed ISRC:") }}
+                                    {{ twind_checkbox("embed_length", "Embed Length:") }}
+                                    {{ twind_checkbox("embed_url", "Embed URL:") }}
+                                    {{ twind_checkbox("embed_key", "Embed Key:") }}
+                                    {{ twind_checkbox("embed_bpm", "Embed BPM:") }}
+                                    {{ twind_checkbox("embed_compilation", "Embed Compilation:") }}
+                                    {{ twind_checkbox("embed_lyrics", "Embed Lyrics:") }}
+                                    {{ twind_checkbox("embed_explicit", "Embed Explicit:") }}
+                                    {{ twind_checkbox("embed_upc", "Embed UPC:") }}
+                                    {{ twind_checkbox("embed_service_id", "Embed Service ID:") }}
+                                    {{ twind_checkbox("embed_timesignature", "Embed Time Signature:") }}
+                                    {{ twind_checkbox("embed_acousticness", "Embed Acousticness:") }}
+                                    {{ twind_checkbox("embed_danceability", "Embed Danceability:") }}
+                                    {{ twind_checkbox("embed_energy", "Embed Energy:") }}
+                                    {{ twind_checkbox("embed_instrumentalness", "Embed Instrumentalness:") }}
+                                    {{ twind_checkbox("embed_liveness", "Embed Liveness:") }}
+                                    {{ twind_checkbox("embed_loudness", "Embed Loudness:") }}
+                                    {{ twind_checkbox("embed_speechiness", "Embed Speechiness:") }}
+                                    {{ twind_checkbox("embed_valence", "Embed Valence:") }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                <h2 class="text-xl font-bold mt-5 mb-2 pl-2">Video Downloads</h2>
-                <table class="w-full border-collapse mb-5">
-                    <colgroup>
-                        <col class="w-1/2">
-                        <col class="w-1/2">
-                    </colgroup>
-                    <tbody>
-                        {{ twind_text_input("video_download_path", "Video Download Path:", "Enter video download path") }}
-                        {{ twind_text_input("movie_file_format", "Movie File Format:", "Enter movie file format") }}
-                        {{ twind_text_input("movie_path_formatter", "Movie Path Formatter:", "Enter movie path format") }}
-                        {{ twind_text_input("show_file_format", "Show File Format:", "Enter show file format") }}
-                        {{ twind_text_input("show_path_formatter", "Show Path Formatter:", "Enter show path format") }}
-                        {{ twind_number_input("preferred_video_resolution", "Preferred Video Resolution:", "Enter max video resolution") }}
-                        {{ twind_checkbox("download_subtitles", "Download Subtitles:") }}
-                        {{ twind_text_input("preferred_audio_language", "Preferred Audio Language:", "Enter preferred audio language") }}
-                        {{ twind_text_input("preferred_subtitle_language", "Preferred Subtitle Language:", "Enter preferred subtitle language") }}
-                        {{ twind_checkbox("download_all_available_audio", "Download All Available Audio:") }}
-                        {{ twind_checkbox("download_all_available_subtitles", "Download All Available Subtitles:") }}
-                    </tbody>
-                </table>
+                <div class="card bg-base-200 shadow-xl mb-6 mx-2">
+                    <div class="card-body p-4 sm:p-6">
+                        <h2 class="card-title text-xl mb-4">Video Downloads</h2>
+                        <div class="w-full overflow-x-auto">
+                            <table class="table w-full">
+                                <colgroup>
+                                    <col class="w-1/2">
+                                    <col class="w-1/2">
+                                </colgroup>
+                                <tbody>
+                                    {{ twind_text_input("video_download_path", "Video Download Path:", "Enter video download path") }}
+                                    {{ twind_text_input("movie_file_format", "Movie File Format:", "Enter movie file format") }}
+                                    {{ twind_text_input("movie_path_formatter", "Movie Path Formatter:", "Enter movie path format") }}
+                                    {{ twind_text_input("show_file_format", "Show File Format:", "Enter show file format") }}
+                                    {{ twind_text_input("show_path_formatter", "Show Path Formatter:", "Enter show path format") }}
+                                    {{ twind_number_input("preferred_video_resolution", "Preferred Video Resolution:", "Enter max video resolution") }}
+                                    {{ twind_checkbox("download_subtitles", "Download Subtitles:") }}
+                                    {{ twind_text_input("preferred_audio_language", "Preferred Audio Language:", "Enter preferred audio language") }}
+                                    {{ twind_text_input("preferred_subtitle_language", "Preferred Subtitle Language:", "Enter preferred subtitle language") }}
+                                    {{ twind_checkbox("download_all_available_audio", "Download All Available Audio:") }}
+                                    {{ twind_checkbox("download_all_available_subtitles", "Download All Available Subtitles:") }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
 

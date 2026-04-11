@@ -1,142 +1,138 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-background text-white font-sans">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OnTheSpot - Download Queue</title>
     <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
     <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='twind.js') }}"></script>
-    <script src="{{ url_for('static', filename='twind-setup.js') }}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
-<body class="m-0 flex flex-col items-center">
-    <div class="w-full" x-data="downloadQueueApp()">
-        <div class="bg-[#1e1e1e] p-2.5 border border-[#333] rounded-[5px] m-2">
-            <ul class="list-none p-0 m-0 flex">
-                <li class="hidden sm:block mr-[15px]"><a href="https://github.com/justin025/onthespot/" target="_blank" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">OnTheSpot</a></li>
-                <li class="mr-[15px]"><a href="/search" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">Search</a></li>
-                <li class="mr-[15px]"><a href="/download_queue" class="no-underline px-[15px] py-2 rounded-[5px] bg-accent text-[#121212]">Downloads</a></li>
-                <li class="mr-[15px]"><a href="/settings" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">Settings</a></li>
-                <li class="mr-[15px]"><a href="/about" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">About</a></li>
-            </ul>
-        </div>
+<body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10">
+    <div class="w-full max-w-full overflow-hidden p-2" x-data="downloadQueueApp()">
+        <ul class="menu menu-horizontal bg-base-200 rounded-box flex-nowrap shadow-md overflow-x-auto w-full mb-4">
+            <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-300 font-bold">OnTheSpot</a></li>
+            <li><a href="/search" class="hover:bg-base-300">Search</a></li>
+            <li><a href="/download_queue" class="active !text-white !bg-primary border-none">Downloads</a></li>
+            <li><a href="/settings" class="hover:bg-base-300">Settings</a></li>
+            <li><a href="/about" class="hover:bg-base-300">About</a></li>
+        </ul>
 
-        <br>
-        <div class="flex items-center justify-between mb-[15px] px-2">
-            <div class="flex items-center">
-                <p class="mr-[10px]" x-text="`Total Items: ${completedCount}/${totalCount} | Progress: ${percentComplete}%`"></p>
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 w-full">
+            <div class="flex items-center text-sm font-semibold mb-2 sm:mb-0">
+                <span x-text="`Total Items: ${completedCount}/${totalCount}`" class="mr-4"></span>
+                <span x-text="`Progress: ${percentComplete}%`"></span>
             </div>
 
-            <div class="flex items-center">
-                <button @click="postRequest('/api/clear_items')" class="hidden sm:inline-block px-5 py-3 ml-2.5 border-none rounded-[10px] bg-accent text-white cursor-pointer text-xs transition-colors hover:bg-[#777]">Clear Completed/Cancelled</button>
-                <button @click="postRequest('/api/cancel_items')" class="hidden sm:inline-block px-5 py-3 ml-2.5 border-none rounded-[10px] bg-accent text-white cursor-pointer text-xs transition-colors hover:bg-[#777]">Cancel All</button>
-                <button @click="postRequest('/api/retry_items')" class="hidden sm:inline-block px-5 py-3 ml-2.5 border-none rounded-[10px] bg-accent text-white cursor-pointer text-xs transition-colors hover:bg-[#777]">Retry Cancelled/Failed</button>
-                <button @click="postRequest('/api/restart')" class="hidden sm:inline-block ml-2.5 px-5 py-3 border-none rounded-[10px] bg-accent text-white cursor-pointer text-xs transition-colors hover:bg-[#777]">Restart Workers</button>
-                <button @click="showCustomFilters = !showCustomFilters" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer hidden sm:inline-block ml-2.5">
+            <div class="flex items-center flex-wrap gap-2 justify-center sm:justify-end">
+                <button @click="postRequest('/api/clear_items')" class="btn btn-outline btn-sm">Clear Completed</button>
+                <button @click="postRequest('/api/cancel_items')" class="btn btn-outline btn-sm btn-error">Cancel All</button>
+                <button @click="postRequest('/api/retry_items')" class="btn btn-outline btn-sm btn-info">Retry Failed</button>
+                <button @click="postRequest('/api/restart')" class="btn btn-outline btn-sm btn-warning">Restart Workers</button>
+                <button @click="showCustomFilters = !showCustomFilters" class="btn btn-square btn-ghost btn-sm">
                     <img :src="showCustomFilters ? '/icons/collapse_up.png' : '/icons/collapse_down.png'" loading="lazy" class="w-5 h-5">
                 </button>
             </div>
         </div>
 
-        <div x-show="showCustomFilters" style="display: none;" class="mt-5 mb-[15px] px-2">
-            <hr class="border border-white mb-5 w-full">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center flex-wrap">
-                    <label class="mr-[5px] ml-[15px]">Show Waiting:</label>
-                    <input type="checkbox" x-model="filters.download_queue_show_waiting" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                    <label class="mr-[5px] ml-[15px]">Show Failed:</label>
-                    <input type="checkbox" x-model="filters.download_queue_show_failed" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                    <label class="mr-[5px] ml-[15px]">Show Cancelled:</label>
-                    <input type="checkbox" x-model="filters.download_queue_show_cancelled" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                    <label class="mr-[5px] ml-[15px]">Show Unavailable:</label>
-                    <input type="checkbox" x-model="filters.download_queue_show_unavailable" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                    <label class="mr-[5px] ml-[15px]">Show Completed:</label>
-                    <input type="checkbox" x-model="filters.download_queue_show_completed" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
+        <div x-show="showCustomFilters" style="display: none;" class="mb-4">
+            <div class="divider text-opacity-50">Filters</div>
+            <div class="flex flex-col sm:flex-row items-center justify-between bg-base-200 p-4 rounded-box">
+                <div class="flex items-center flex-wrap gap-4">
+                    <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Show Waiting</span> <input type="checkbox" x-model="filters.download_queue_show_waiting" class="checkbox checkbox-primary checkbox-sm"></label>
+                    <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Show Failed</span> <input type="checkbox" x-model="filters.download_queue_show_failed" class="checkbox checkbox-error checkbox-sm"></label>
+                    <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Show Cancelled</span> <input type="checkbox" x-model="filters.download_queue_show_cancelled" class="checkbox checkbox-warning checkbox-sm"></label>
+                    <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Show Unavailable</span> <input type="checkbox" x-model="filters.download_queue_show_unavailable" class="checkbox checkbox-neutral checkbox-sm"></label>
+                    <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Show Completed</span> <input type="checkbox" x-model="filters.download_queue_show_completed" class="checkbox checkbox-success checkbox-sm"></label>
                 </div>
-                <div class="flex items-center">
-                    <button @click="saveFilters" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer ml-2">
+                <div class="mt-4 sm:mt-0">
+                    <button @click="saveFilters" class="btn btn-square btn-ghost">
                         <img src="/icons/save.png" loading="lazy" class="w-5 h-5">
                     </button>
                 </div>
             </div>
         </div>
 
-        <table class="w-full border-collapse">
-            <thead>
-                <tr>
-                    <th style="display: none;">Local ID</th>
-                    {% if config.show_download_thumbnails %}
-                        <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Image</th>
-                    {% endif %}
-                    <th @click="setSort('item_name')" class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] cursor-pointer min-w-[12ch]">
-                        Name <span x-text="getSortIndicator('item_name')" class="inline-block w-[1.2em] text-center"></span>
-                    </th>
-                    <th @click="setSort('parent_category')" class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] cursor-pointer min-w-[8ch] hidden sm:table-cell">
-                        By <span x-text="getSortIndicator('parent_category')" class="inline-block w-[1.2em] text-center"></span>
-                    </th>
-                    <th @click="setSort('item_service')" class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] cursor-pointer min-w-[8ch]">
-                        Service <span x-text="getSortIndicator('item_service')" class="inline-block w-[1.2em] text-center"></span>
-                    </th>
-                    <th @click="setSort('item_status')" class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] cursor-pointer min-w-[16ch]">
-                        Status <span x-text="getSortIndicator('item_status')" class="inline-block w-[1.2em] text-center"></span>
-                    </th>
-                    <th @click="setSort('progress')" class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] cursor-pointer min-w-[12em] hidden sm:table-cell">
-                        Progress <span x-text="getSortIndicator('progress')" class="inline-block w-[1.2em] text-center"></span>
-                    </th>
-                    <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="(item, index) in filteredAndSortedItems" :key="item.local_id">
-                    <tr :class="index % 2 === 0 ? 'bg-rowEven' : 'bg-rowOdd'">
-                        <td style="display: none;" x-text="item.local_id"></td>
+        <div class="w-full overflow-x-auto">
+            <table class="table table-zebra table-sm sm:table-md w-full min-w-[700px] shadow-lg rounded-box bg-base-200">
+                <thead class="bg-base-300 text-base-content text-sm">
+                    <tr>
+                        <th style="display: none;">Local ID</th>
                         {% if config.show_download_thumbnails %}
-                            <td class="border-2 border-[#1f1f1f] p-2">
-                                <template x-if="item.item_thumbnail">
-                                    <img :src="item.item_thumbnail" loading="lazy" style="width: {{ config.thumbnail_size }}px; height: {{ config.thumbnail_size }}px;">
+                            <th>Image</th>
+                        {% endif %}
+                        <th @click="setSort('item_name')" class="cursor-pointer hover:bg-base-200 transition-colors">
+                            Name <span x-text="getSortIndicator('item_name')" class="inline-block w-4 text-center"></span>
+                        </th>
+                        <th @click="setSort('parent_category')" class="cursor-pointer hover:bg-base-200 transition-colors hidden sm:table-cell">
+                            By <span x-text="getSortIndicator('parent_category')" class="inline-block w-4 text-center"></span>
+                        </th>
+                        <th @click="setSort('item_service')" class="cursor-pointer hover:bg-base-200 transition-colors">
+                            Service <span x-text="getSortIndicator('item_service')" class="inline-block w-4 text-center"></span>
+                        </th>
+                        <th @click="setSort('item_status')" class="cursor-pointer hover:bg-base-200 transition-colors">
+                            Status <span x-text="getSortIndicator('item_status')" class="inline-block w-4 text-center"></span>
+                        </th>
+                        <th @click="setSort('progress')" class="cursor-pointer hover:bg-base-200 transition-colors hidden sm:table-cell">
+                            Progress <span x-text="getSortIndicator('progress')" class="inline-block w-4 text-center"></span>
+                        </th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="(item, index) in filteredAndSortedItems" :key="item.local_id">
+                        <tr class="hover">
+                            <td style="display: none;" x-text="item.local_id"></td>
+                            {% if config.show_download_thumbnails %}
+                                <td>
+                                    <template x-if="item.item_thumbnail">
+                                        <img :src="item.item_thumbnail" loading="lazy" class="rounded object-cover" :style="'width: ' + {{ config.thumbnail_size }} + 'px; height: ' + {{ config.thumbnail_size }} + 'px;'">
+                                    </template>
+                                </td>
+                            {% endif %}
+                            <td class="font-medium max-w-[200px] truncate" x-text="item.item_name"></td>
+                            <td class="hidden sm:table-cell max-w-[150px] truncate" x-text="capitalizeFirstLetter(item.parent_category)"></td>
+                            <td>
+                                <template x-if="item.item_service">
+                                    <div class="flex items-center gap-2">
+                                        <img :src="'/icons/' + item.item_service + '.png'" loading="lazy" class="w-5 h-5 align-middle">
+                                        <span class="hidden sm:inline" x-text="formatServiceName(item.item_service)"></span>
+                                    </div>
                                 </template>
                             </td>
-                        {% endif %}
-                        <td class="border-2 border-[#1f1f1f] p-2 max-w-[200px] truncate" x-text="item.item_name"></td>
-                        <td class="border-2 border-[#1f1f1f] p-2 hidden sm:table-cell" x-text="capitalizeFirstLetter(item.parent_category)"></td>
-                        <td class="border-2 border-[#1f1f1f] p-2">
-                            <template x-if="item.item_service">
-                                <img :src="'/icons/' + item.item_service + '.png'" loading="lazy" class="w-5 h-5 mr-1 align-middle">
-                            </template>
-                            <span class="hidden sm:inline align-middle" x-text="formatServiceName(item.item_service)"></span>
-                        </td>
-                        <td class="border-2 border-[#1f1f1f] p-2 whitespace-nowrap" x-text="item.item_status || 'N/A'"></td>
-                        <td class="border-2 border-[#1f1f1f] p-2 hidden sm:table-cell">
-                            <div class="w-full bg-[#777] rounded-[5px] relative">
-                                <div class="font-bold text-center bg-[#4caf50] h-5 rounded-[5px]" :style="'width: ' + (item.progress || 0) + '%'" x-text="(item.progress || 0) + '%'"></div>
-                            </div>
-                        </td>
-                        <td class="border-2 border-[#1f1f1f] p-2 whitespace-nowrap">
-                            <template x-if="config.download_copy_btn">
-                                <button @click="copyToClipboard(item.item_url)" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-1"><img src="/icons/link.png" loading="lazy" class="w-5 h-5"></button>
-                            </template>
-                            <template x-if="!['Failed', 'Cancelled', 'Deleted', 'Already Exists', 'Downloaded'].includes(item.item_status)">
-                                <button @click="postRequest('/api/cancel/' + item.local_id)" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-1"><img src="/icons/stop.png" loading="lazy" class="w-5 h-5"></button>
-                            </template>
-                            <template x-if="['Failed', 'Cancelled', 'Deleted'].includes(item.item_status)">
-                                <button @click="postRequest('/api/retry/' + item.local_id)" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-1"><img src="/icons/retry.png" loading="lazy" class="w-5 h-5"></button>
-                            </template>
-                            <template x-if="['Downloaded', 'Already Exists'].includes(item.item_status)">
-                                <span class="inline-flex">
-                                    <template x-if="config.download_open_btn">
-                                        <button @click="window.location.href='/api/download/' + item.local_id" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-1"><img src="/icons/file.png" loading="lazy" class="w-5 h-5"></button>
-                                    </template>
-                                    <template x-if="config.download_delete_btn">
-                                        <button @click="deleteRequest('/api/delete/' + item.local_id)" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-1"><img src="/icons/trash.png" loading="lazy" class="w-5 h-5"></button>
-                                    </template>
-                                </span>
-                            </template>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+                            <td class="whitespace-nowrap font-medium" x-text="item.item_status || 'N/A'"></td>
+                            <td class="hidden sm:table-cell w-32">
+                                <progress class="progress progress-success w-full bg-base-300" :value="item.progress || 0" max="100"></progress>
+                                <span class="text-xs opacity-70 block text-center mt-1 font-mono" x-text="(item.progress || 0) + '%'"></span>
+                            </td>
+                            <td class="whitespace-nowrap">
+                                <template x-if="config.download_copy_btn">
+                                    <button @click="copyToClipboard(item.item_url)" class="btn btn-square btn-ghost btn-sm mr-1"><img src="/icons/link.png" loading="lazy" class="w-4 h-4"></button>
+                                </template>
+                                <template x-if="!['Failed', 'Cancelled', 'Deleted', 'Already Exists', 'Downloaded'].includes(item.item_status)">
+                                    <button @click="postRequest('/api/cancel/' + item.local_id)" class="btn btn-square btn-ghost btn-sm mr-1"><img src="/icons/stop.png" loading="lazy" class="w-4 h-4"></button>
+                                </template>
+                                <template x-if="['Failed', 'Cancelled', 'Deleted'].includes(item.item_status)">
+                                    <button @click="postRequest('/api/retry/' + item.local_id)" class="btn btn-square btn-ghost btn-sm mr-1"><img src="/icons/retry.png" loading="lazy" class="w-4 h-4"></button>
+                                </template>
+                                <template x-if="['Downloaded', 'Already Exists'].includes(item.item_status)">
+                                    <span class="inline-flex gap-1">
+                                        <template x-if="config.download_open_btn">
+                                            <button @click="window.location.href='/api/download/' + item.local_id" class="btn btn-square btn-ghost btn-sm"><img src="/icons/file.png" loading="lazy" class="w-4 h-4"></button>
+                                        </template>
+                                        <template x-if="config.download_delete_btn">
+                                            <button @click="deleteRequest('/api/delete/' + item.local_id)" class="btn btn-square btn-ghost btn-sm"><img src="/icons/trash.png" loading="lazy" class="w-4 h-4"></button>
+                                        </template>
+                                    </span>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>

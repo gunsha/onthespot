@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-background text-white font-sans">
+<html lang="en" data-theme="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Search</title>
         <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
         <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <script src="{{ url_for('static', filename='twind.js') }}"></script>
-        <script src="{{ url_for('static', filename='twind-setup.js') }}"></script>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.tailwindcss.com"></script>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     </head>
-    <body class="m-0 flex flex-col items-center" x-data="{
+    <body class="m-0 flex flex-col items-center bg-base-100 min-h-screen pb-10" x-data="{
         query: '',
         results: [],
         showFilters: false,
@@ -49,103 +49,98 @@
             updateSettings(this.filters);
         }
     }">
-        <div class="w-full">
-            <div class="bg-[#1e1e1e] p-2.5 border border-[#333] rounded-[5px] m-2">
-                <ul class="list-none p-0 m-0 flex">
-                    <li class="hidden sm:block mr-[15px]"><a href="https://github.com/justin025/onthespot/" target="_blank" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">OnTheSpot</a></li>
-                    <li class="mr-[15px]"><a href="/search" class="no-underline px-[15px] py-2 rounded-[5px] bg-accent text-[#121212]">Search</a></li>
-                    <li class="mr-[15px]"><a href="/download_queue" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">Downloads</a></li>
-                    <li class="mr-[15px]"><a href="/settings" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">Settings</a></li>
-                    <li class="mr-[15px]"><a href="/about" class="no-underline text-[#1DB954] px-[15px] py-2 rounded-[5px] transition-colors duration-300 hover:bg-[#333]">About</a></li>
-                </ul>
-            </div>
+        <div class="w-full max-w-full overflow-hidden p-2">
+            <ul class="menu menu-horizontal bg-base-200 rounded-box flex-nowrap shadow-md overflow-x-auto w-full mb-4">
+                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-300 font-bold">OnTheSpot</a></li>
+                <li><a href="/search" class="active !text-white !bg-primary border-none">Search</a></li>
+                <li><a href="/download_queue" class="hover:bg-base-300">Downloads</a></li>
+                <li><a href="/settings" class="hover:bg-base-300">Settings</a></li>
+                <li><a href="/about" class="hover:bg-base-300">About</a></li>
+            </ul>
 
-            <br>
-
-            <div class="flex items-center justify-between mb-[15px] px-2">
-                <div class="flex items-center">
-                    <form @submit.prevent="submitSearch()" class="flex gap-2.5 items-center">
-                        <input type="text" x-model="query" placeholder="Search by name" class="bg-[#2f2f2f] text-white border-2 border-[#2f2f2f] rounded-[10px] outline-none transition-colors duration-300 text-xs w-[250px] px-3 py-2.5 focus:border-accent">
-                        <button type="submit" class="px-5 py-3 border-none rounded-[10px] bg-accent text-white cursor-pointer text-xs transition-colors duration-300 hover:bg-[#777]">Search</button>
+            <div class="flex items-center justify-between mb-4 px-2 w-full">
+                <div class="flex items-center w-full max-w-[calc(100%-40px)]">
+                    <form @submit.prevent="submitSearch()" class="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center w-full">
+                        <input type="text" x-model="query" placeholder="Search by name" class="input input-bordered w-full sm:max-w-[250px] focus:input-primary">
+                        <button type="submit" class="btn btn-primary w-full sm:w-auto">Search</button>
                     </form>
                 </div>
 
                 <div class="flex items-center">
-                    <button @click="showFilters = !showFilters" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer font-bold text-lg leading-none hidden sm:block">
-                        <img :src="showFilters ? '/icons/collapse_up.png' : '/icons/collapse_down.png'" loading="lazy" class="w5 h-5" style="width: 20px; height: 20px;">
+                    <button @click="showFilters = !showFilters" class="btn btn-square btn-ghost hidden sm:inline-flex">
+                        <img :src="showFilters ? '/icons/collapse_up.png' : '/icons/collapse_down.png'" loading="lazy" class="w-5 h-5">
                     </button>
                 </div>
             </div>
 
-            <div x-show="showFilters" style="display: none;" class="mt-5 mb-[15px] px-2">
-                <hr class="border border-white mb-5 w-full">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center flex-wrap">
-                        <p class="mr-[5px] ml-[15px]">Search For:</p>
-                        <label class="mr-[5px] ml-[15px] cursor-pointer">Tracks</label>
-                        <input type="checkbox" x-model="filters.enable_search_tracks" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                        <label class="mr-[5px] ml-[15px] cursor-pointer">Albums</label>
-                        <input type="checkbox" x-model="filters.enable_search_albums" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                        <label class="mr-[5px] ml-[15px] cursor-pointer">Playlists</label>
-                        <input type="checkbox" x-model="filters.enable_search_playlists" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                        <label class="mr-[5px] ml-[15px] cursor-pointer">Artists</label>
-                        <input type="checkbox" x-model="filters.enable_search_artists" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                        <label class="mr-[5px] ml-[15px] cursor-pointer">Episodes</label>
-                        <input type="checkbox" x-model="filters.enable_search_episodes" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                        <label class="mr-[5px] ml-[15px] cursor-pointer">Podcasts</label>
-                        <input type="checkbox" x-model="filters.enable_search_podcasts" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
-                        <label class="mr-[5px] ml-[15px] cursor-pointer">Audiobooks</label>
-                        <input type="checkbox" x-model="filters.enable_search_audiobooks" class="w-4 h-4 text-accent bg-[#2f2f2f] border-gray-600 rounded">
+            <div x-show="showFilters" style="display: none;" class="mb-4">
+                <div class="divider text-opacity-50">Filters</div>
+                <div class="flex flex-col sm:flex-row items-center justify-between bg-base-200 p-4 rounded-box">
+                    <div class="flex items-center flex-wrap gap-4 outline-none">
+                        <span class="font-semibold hidden sm:inline-flex">Search For:</span>
+                        <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Tracks</span> <input type="checkbox" x-model="filters.enable_search_tracks" class="checkbox checkbox-primary checkbox-sm"></label>
+                        <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Albums</span> <input type="checkbox" x-model="filters.enable_search_albums" class="checkbox checkbox-primary checkbox-sm"></label>
+                        <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Playlists</span> <input type="checkbox" x-model="filters.enable_search_playlists" class="checkbox checkbox-primary checkbox-sm"></label>
+                        <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Artists</span> <input type="checkbox" x-model="filters.enable_search_artists" class="checkbox checkbox-primary checkbox-sm"></label>
+                        <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Episodes</span> <input type="checkbox" x-model="filters.enable_search_episodes" class="checkbox checkbox-primary checkbox-sm"></label>
+                        <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Podcasts</span> <input type="checkbox" x-model="filters.enable_search_podcasts" class="checkbox checkbox-primary checkbox-sm"></label>
+                        <label class="cursor-pointer label p-0 gap-2"><span class="label-text">Audiobooks</span> <input type="checkbox" x-model="filters.enable_search_audiobooks" class="checkbox checkbox-primary checkbox-sm"></label>
                     </div>
-                    <div class="flex items-center">
-                        <button @click="saveFilters()" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer ml-2">
-                            <img src="/icons/save.png" loading="lazy" style="width: 20px; height: 20px;">
+                    <div class="mt-4 sm:mt-0">
+                        <button @click="saveFilters()" class="btn btn-square btn-ghost">
+                            <img src="/icons/save.png" loading="lazy" class="w-5 h-5">
                         </button>
                     </div>
                 </div>
             </div>
 
-            <br>
-            
-            <div class="w-full">
-                <table class="w-full border-collapse">
-                    <thead>
+            <div class="w-full overflow-x-auto">
+                <table class="table table-zebra table-sm sm:table-md w-full shadow-lg rounded-box bg-base-200">
+                    <thead class="bg-base-300 text-base-content text-sm">
                         <tr>
                             {% if config.show_search_thumbnails %}
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Image</th>
+                            <th class="w-16">Image</th>
                             {% endif %}
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Name</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a] hidden sm:table-cell">By</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Type</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Service</th>
-                            <th class="border-2 border-[#1f1f1f] text-left p-2 bg-[#1a1a1a]">Action</th>
+                            <th>Name</th>
+                            <th class="hidden md:table-cell">By</th>
+                            <th class="hidden sm:table-cell">Type</th>
+                            <th>Service</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-for="(item, index) in results" :key="index">
-                            <tr :class="index % 2 === 0 ? 'bg-rowEven' : 'bg-rowOdd'">
+                            <tr class="hover">
                                 {% if config.show_search_thumbnails %}
-                                <td class="border-2 border-[#1f1f1f] p-2">
+                                <td>
                                     <template x-if="item.item_thumbnail_url">
-                                        <img :src="item.item_thumbnail_url" loading="lazy" style="width: {{ config.thumbnail_size }}px; height: {{ config.thumbnail_size }}px;">
+                                        <img :src="item.item_thumbnail_url" loading="lazy" class="rounded object-cover min-w-[32px]" :style="'width: ' + {{ config.thumbnail_size }} + 'px; height: ' + {{ config.thumbnail_size }} + 'px;'">
                                     </template>
                                 </td>
                                 {% endif %}
-                                <td class="border-2 border-[#1f1f1f] p-2" x-text="item.item_name"></td>
-                                <td class="border-2 border-[#1f1f1f] p-2 hidden sm:table-cell" x-text="item.item_by"></td>
-                                <td class="border-2 border-[#1f1f1f] p-2" x-text="capitalizeFirstLetter(item.item_type)"></td>
-                                <td class="border-2 border-[#1f1f1f] p-2">
-                                    <template x-if="item.item_service">
-                                        <img :src="'/icons/' + item.item_service + '.png'" loading="lazy" class="w-[20px] h-[20px] mr-[5px] inline-block">
-                                    </template>
-                                    <span class="hidden sm:inline" x-text="formatServiceName(item.item_service)"></span>
+                                <td class="max-w-[140px] sm:max-w-xs truncate">
+                                    <div class="font-medium truncate" x-text="item.item_name"></div>
+                                    <div class="text-xs opacity-70 truncate md:hidden" x-text="(item.item_by ? item.item_by + ' • ' : '') + capitalizeFirstLetter(item.item_type)"></div>
                                 </td>
-                                <td class="border-2 border-[#1f1f1f] p-2 whitespace-nowrap">
-                                    <button @click="copyToClipboard(item.item_url)" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer mr-1">
-                                        <img src="icons/link.png" loading="lazy" alt="Copy Link" class="w-[20px] h-[20px]">
+                                <td class="hidden md:table-cell max-w-[200px] truncate" x-text="item.item_by"></td>
+                                <td class="hidden sm:table-cell" x-text="capitalizeFirstLetter(item.item_type)"></td>
+                                <td>
+                                    <template x-if="item.item_service">
+                                        <div class="flex items-center gap-2">
+                                            <img :src="'/icons/' + item.item_service + '.png'" loading="lazy" class="w-5 h-5 min-w-[20px]">
+                                            <span class="hidden sm:inline" x-text="formatServiceName(item.item_service)"></span>
+                                        </div>
+                                    </template>
+                                    <template x-if="!item.item_service">
+                                        <span class="hidden sm:inline" x-text="formatServiceName(item.item_service)"></span>
+                                    </template>
+                                </td>
+                                <td class="whitespace-nowrap">
+                                    <button @click="copyToClipboard(item.item_url)" class="btn btn-square btn-ghost btn-sm mr-1">
+                                        <img src="icons/link.png" loading="lazy" alt="Copy Link" class="w-4 h-4">
                                     </button>
-                                    <button @click="handleDownload(item.item_url)" class="border-2 border-[#555] rounded-[5px] p-[5px] bg-transparent cursor-pointer">
-                                        <img src="icons/download.png" loading="lazy" alt="Download" class="w-[20px] h-[20px]">
+                                    <button @click="handleDownload(item.item_url)" class="btn btn-square btn-ghost btn-sm">
+                                        <img src="icons/download.png" loading="lazy" alt="Download" class="w-4 h-4">
                                     </button>
                                 </td>
                             </tr>
