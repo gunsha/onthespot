@@ -1921,6 +1921,9 @@
   .h-5 {
     height: calc(var(--spacing) * 5);
   }
+  .h-\[1em\] {
+    height: 1em;
+  }
   .h-\[11em\] {
     height: 11em;
   }
@@ -1977,6 +1980,9 @@
   }
   .flex-shrink-0 {
     flex-shrink: 0;
+  }
+  .grow {
+    flex-grow: 1;
   }
   .rotate-180 {
     rotate: 180deg;
