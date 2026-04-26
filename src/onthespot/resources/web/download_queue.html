@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OnTheSpot - Download Queue</title>
-    <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-    <link href="{{ url_for('static', filename='daisyui.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <script src="/web/utils.js" defer></script>
+    <script src="/web/alpine.min.js" defer></script>
+    <link href="/web/daisyui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/web/styles.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="/web/favicon.ico" type="image/x-icon">
 </head>
 <body class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10">
     <div class="w-full max-w-full overflow-hidden p-2" x-data="downloadQueueApp()">
@@ -92,6 +92,9 @@
                         
                         <div class="">
                             <div class="font-medium truncate" x-text="item.item_name"></div>
+                            <template x-if="item.album_name">
+                                <div class="text-xs font-semibold opacity-75 truncate mt-0.5" x-text="item.album_name"></div>
+                            </template>
                             <div class="text-xs uppercase font-semibold opacity-60 flex items-center gap-1 mt-1 truncate">
                                 <template x-if="item.parent_category">
                                     <span class="truncate" x-text="capitalizeFirstLetter(item.parent_category)"></span>

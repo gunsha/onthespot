@@ -4,11 +4,11 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Settings</title>
-        <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
-        <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="{{ url_for('static', filename='daisyui.min.css') }}" rel="stylesheet" type="text/css" />
-        <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
-        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+        <script src="/web/utils.js" defer></script>
+        <script src="/web/alpine.min.js" defer></script>
+        <link href="/web/daisyui.min.css" rel="stylesheet" type="text/css" />
+        <link href="/web/styles.css" rel="stylesheet" type="text/css" />
+        <link rel="icon" href="/web/favicon.ico" type="image/x-icon">
     </head>
     <body class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10">
         <div class="w-full max-w-full overflow-hidden p-2" x-data="settingsApp()">
@@ -104,7 +104,7 @@
             </div>
             <br class="hidden sm:block">
 
-            {% macro twind_checkbox(id, label_text) %}
+            {% macro checkbox(id, label_text) %}
             <tr class="hover">
                 <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}" class="cursor-pointer">{{ label_text }}</label></td>
                 <td class="p-3 w-1/2 align-middle">
@@ -113,7 +113,7 @@
             </tr>
             {% endmacro %}
 
-            {% macro twind_text_input(id, label_text, placeholder) %}
+            {% macro text_input(id, label_text, placeholder) %}
             <tr class="hover">
                 <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
                 <td class="p-3 w-1/2 align-middle">
@@ -122,7 +122,7 @@
             </tr>
             {% endmacro %}
             
-            {% macro twind_password_input(id, label_text, placeholder) %}
+            {% macro password_input(id, label_text, placeholder) %}
             <tr class="hover">
                 <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
                 <td class="p-3 w-1/2 align-middle">
@@ -131,7 +131,7 @@
             </tr>
             {% endmacro %}
 
-            {% macro twind_number_input(id, label_text, placeholder) %}
+            {% macro number_input(id, label_text, placeholder) %}
             <tr class="hover">
                 <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
                 <td class="p-3 w-1/2 align-middle">
@@ -152,9 +152,9 @@
                                     <col class="w-1/2">
                                 </colgroup>
                                 <tbody>
-                                    {{ twind_checkbox("use_webui_login", "Enable Web UI Login Page:") }}
-                                    {{ twind_text_input("webui_username", "Web UI Username:", "Enter your username") }}
-                                    {{ twind_password_input("webui_password", "Web UI Password:", "Enter your password") }}
+                                    {{ checkbox("use_webui_login", "Enable Web UI Login Page:") }}
+                                    {{ text_input("webui_username", "Web UI Username:", "Enter your username") }}
+                                    {{ password_input("webui_password", "Web UI Password:", "Enter your password") }}
                                 </tbody>
                             </table>
                         </div>
@@ -171,29 +171,29 @@
                                     <col class="w-1/2">
                                 </colgroup>
                                 <tbody>
-                                    {{ twind_text_input("explicit_label", "Explicit Label:", "Enter explicit label") }}
-                                    {{ twind_checkbox("download_copy_btn", "Add Copy Button to Downloads:") }}
-                                    {{ twind_checkbox("download_open_btn", "Add Open Button to Downloads:") }}
-                                    {{ twind_checkbox("download_locate_btn", "Add Locate Button to Downloads:") }}
-                                    {{ twind_checkbox("download_delete_btn", "Add Delete Button to Downloads:") }}
-                                    {{ twind_checkbox("show_search_thumbnails", "Show Thumbnails in Search View:") }}
-                                    {{ twind_checkbox("show_download_thumbnails", "Show Thumbnails in Download View:") }}
-                                    {{ twind_number_input("thumbnail_size", "Thumbnail Size (px):", "Enter thumbnail size") }}
-                                    {{ twind_number_input("max_search_results", "Max Search Results:", "Enter max search results") }}
-                                    {{ twind_checkbox("disable_download_popups", "Hide Download Popups:") }}
-                                    {{ twind_checkbox("windows_10_explorer_thumbnails", "Use Old ID3 Format for Windows 10 Explorer:") }}
-                                    {{ twind_checkbox("mirror_spotify_playback", "Mirror Spotify Playback:") }}
-                                    {{ twind_checkbox("close_to_tray", "Close Application to Tray:") }}
-                                    {{ twind_checkbox("check_for_updates", "Check for Updates:") }}
-                                    {{ twind_text_input("illegal_character_replacement", "Illegal Character Replacement:", "Enter character for replacement") }}
-                                    {{ twind_checkbox("raw_media_download", "Skip Media Conversion:") }}
-                                    {{ twind_checkbox("rotate_active_account_number", "Rotate Active Account:") }}
-                                    {{ twind_number_input("download_delay", "Download Delay (seconds):", "Enter download delay") }}
-                                    {{ twind_number_input("download_chunk_size", "Download Chunk Size (bytes):", "Enter chunk size") }}
-                                    {{ twind_number_input("maximum_queue_workers", "Maximum Queue Workers:", "Enter max queue workers") }}
-                                    {{ twind_number_input("maximum_download_workers", "Maximum Download Workers:", "Enter max download workers") }}
-                                    {{ twind_checkbox("enable_retry_worker", "Enable Retry Worker:") }}
-                                    {{ twind_number_input("retry_worker_delay", "Retry Worker Delay (minutes):", "Enter retry delay") }}
+                                    {{ text_input("explicit_label", "Explicit Label:", "Enter explicit label") }}
+                                    {{ checkbox("download_copy_btn", "Add Copy Button to Downloads:") }}
+                                    {{ checkbox("download_open_btn", "Add Open Button to Downloads:") }}
+                                    {{ checkbox("download_locate_btn", "Add Locate Button to Downloads:") }}
+                                    {{ checkbox("download_delete_btn", "Add Delete Button to Downloads:") }}
+                                    {{ checkbox("show_search_thumbnails", "Show Thumbnails in Search View:") }}
+                                    {{ checkbox("show_download_thumbnails", "Show Thumbnails in Download View:") }}
+                                    {{ number_input("thumbnail_size", "Thumbnail Size (px):", "Enter thumbnail size") }}
+                                    {{ number_input("max_search_results", "Max Search Results:", "Enter max search results") }}
+                                    {{ checkbox("disable_download_popups", "Hide Download Popups:") }}
+                                    {{ checkbox("windows_10_explorer_thumbnails", "Use Old ID3 Format for Windows 10 Explorer:") }}
+                                    {{ checkbox("mirror_spotify_playback", "Mirror Spotify Playback:") }}
+                                    {{ checkbox("close_to_tray", "Close Application to Tray:") }}
+                                    {{ checkbox("check_for_updates", "Check for Updates:") }}
+                                    {{ text_input("illegal_character_replacement", "Illegal Character Replacement:", "Enter character for replacement") }}
+                                    {{ checkbox("raw_media_download", "Skip Media Conversion:") }}
+                                    {{ checkbox("rotate_active_account_number", "Rotate Active Account:") }}
+                                    {{ number_input("download_delay", "Download Delay (seconds):", "Enter download delay") }}
+                                    {{ number_input("download_chunk_size", "Download Chunk Size (bytes):", "Enter chunk size") }}
+                                    {{ number_input("maximum_queue_workers", "Maximum Queue Workers:", "Enter max queue workers") }}
+                                    {{ number_input("maximum_download_workers", "Maximum Download Workers:", "Enter max download workers") }}
+                                    {{ checkbox("enable_retry_worker", "Enable Retry Worker:") }}
+                                    {{ number_input("retry_worker_delay", "Retry Worker Delay (minutes):", "Enter retry delay") }}
                                 </tbody>
                             </table>
                         </div>
@@ -210,27 +210,27 @@
                                     <col class="w-1/2">
                                 </colgroup>
                                 <tbody>
-                                    {{ twind_text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }}
-                                    {{ twind_text_input("track_file_format", "Track File Format:", "Enter track file format") }}
-                                    {{ twind_text_input("track_path_formatter", "Track Path Formatter:", "Enter track path format") }}
-                                    {{ twind_text_input("podcast_file_format", "Podcast File Format:", "Enter podcast file format") }}
-                                    {{ twind_text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format") }}
-                                    {{ twind_checkbox("use_playlist_path", "Use Playlist Path:") }}
-                                    {{ twind_text_input("playlist_path_formatter", "Playlist Path Formatter:", "Enter playlist path format") }}
-                                    {{ twind_checkbox("create_m3u_file", "Create M3U File:") }}
-                                    {{ twind_text_input("m3u_path_formatter", "M3U Path Formatter:", "Enter M3U path format") }}
-                                    {{ twind_text_input("extinf_separator", "EXTINF Separator:", "Enter EXTINF metadata separator") }}
-                                    {{ twind_text_input("extinf_label", "EXTINF Label:", "Enter EXTINF label format") }}
-                                    {{ twind_checkbox("save_album_cover", "Save Album Cover:") }}
-                                    {{ twind_text_input("album_cover_format", "Album Cover Format:", "Enter album cover format") }}
-                                    {{ twind_text_input("file_bitrate", "File Bitrate:", "Enter file bitrate") }}
-                                    {{ twind_number_input("file_hertz", "File Hertz:", "Enter file hertz") }}
-                                    {{ twind_checkbox("use_custom_file_bitrate", "Use Custom File Bitrate:") }}
-                                    {{ twind_checkbox("download_lyrics", "Enable Lyrics Download:") }}
-                                    {{ twind_checkbox("only_download_synced_lyrics", "Only Download Synced Lyrics:") }}
-                                    {{ twind_checkbox("only_download_plain_lyrics", "Only Download Plain Lyrics:") }}
-                                    {{ twind_checkbox("save_lrc_file", "Save LRC File:") }}
-                                    {{ twind_checkbox("translate_file_path", "Translate File Path:") }}
+                                    {{ text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }}
+                                    {{ text_input("track_file_format", "Track File Format:", "Enter track file format") }}
+                                    {{ text_input("track_path_formatter", "Track Path Formatter:", "Enter track path format") }}
+                                    {{ text_input("podcast_file_format", "Podcast File Format:", "Enter podcast file format") }}
+                                    {{ text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format") }}
+                                    {{ checkbox("use_playlist_path", "Use Playlist Path:") }}
+                                    {{ text_input("playlist_path_formatter", "Playlist Path Formatter:", "Enter playlist path format") }}
+                                    {{ checkbox("create_m3u_file", "Create M3U File:") }}
+                                    {{ text_input("m3u_path_formatter", "M3U Path Formatter:", "Enter M3U path format") }}
+                                    {{ text_input("extinf_separator", "EXTINF Separator:", "Enter EXTINF metadata separator") }}
+                                    {{ text_input("extinf_label", "EXTINF Label:", "Enter EXTINF label format") }}
+                                    {{ checkbox("save_album_cover", "Save Album Cover:") }}
+                                    {{ text_input("album_cover_format", "Album Cover Format:", "Enter album cover format") }}
+                                    {{ text_input("file_bitrate", "File Bitrate:", "Enter file bitrate") }}
+                                    {{ number_input("file_hertz", "File Hertz:", "Enter file hertz") }}
+                                    {{ checkbox("use_custom_file_bitrate", "Use Custom File Bitrate:") }}
+                                    {{ checkbox("download_lyrics", "Enable Lyrics Download:") }}
+                                    {{ checkbox("only_download_synced_lyrics", "Only Download Synced Lyrics:") }}
+                                    {{ checkbox("only_download_plain_lyrics", "Only Download Plain Lyrics:") }}
+                                    {{ checkbox("save_lrc_file", "Save LRC File:") }}
+                                    {{ checkbox("translate_file_path", "Translate File Path:") }}
                                 </tbody>
                             </table>
                         </div>
@@ -247,44 +247,44 @@
                                     <col class="w-1/2">
                                 </colgroup>
                                 <tbody>
-                                    {{ twind_text_input("metadata_separator", "Metadata Separator:", "Enter metadata separator") }}
-                                    {{ twind_checkbox("overwrite_existing_metadata", "Overwrite Existing Metadata:") }}
-                                    {{ twind_checkbox("embed_branding", "Embed Branding:") }}
-                                    {{ twind_checkbox("embed_cover", "Embed Cover:") }}
-                                    {{ twind_checkbox("embed_artist", "Embed Artist:") }}
-                                    {{ twind_checkbox("embed_album", "Embed Album:") }}
-                                    {{ twind_checkbox("embed_albumartist", "Embed Album Artist:") }}
-                                    {{ twind_checkbox("embed_name", "Embed Name:") }}
-                                    {{ twind_checkbox("embed_year", "Embed Year:") }}
-                                    {{ twind_checkbox("embed_discnumber", "Embed Disc Number:") }}
-                                    {{ twind_checkbox("embed_tracknumber", "Embed Track Number:") }}
-                                    {{ twind_checkbox("embed_genre", "Embed Genre:") }}
-                                    {{ twind_checkbox("embed_performers", "Embed Performers:") }}
-                                    {{ twind_checkbox("embed_producers", "Embed Producers:") }}
-                                    {{ twind_checkbox("embed_writers", "Embed Writers:") }}
-                                    {{ twind_checkbox("embed_label", "Embed Label:") }}
-                                    {{ twind_checkbox("embed_copyright", "Embed Copyright:") }}
-                                    {{ twind_checkbox("embed_description", "Embed Description:") }}
-                                    {{ twind_checkbox("embed_language", "Embed Language:") }}
-                                    {{ twind_checkbox("embed_isrc", "Embed ISRC:") }}
-                                    {{ twind_checkbox("embed_length", "Embed Length:") }}
-                                    {{ twind_checkbox("embed_url", "Embed URL:") }}
-                                    {{ twind_checkbox("embed_key", "Embed Key:") }}
-                                    {{ twind_checkbox("embed_bpm", "Embed BPM:") }}
-                                    {{ twind_checkbox("embed_compilation", "Embed Compilation:") }}
-                                    {{ twind_checkbox("embed_lyrics", "Embed Lyrics:") }}
-                                    {{ twind_checkbox("embed_explicit", "Embed Explicit:") }}
-                                    {{ twind_checkbox("embed_upc", "Embed UPC:") }}
-                                    {{ twind_checkbox("embed_service_id", "Embed Service ID:") }}
-                                    {{ twind_checkbox("embed_timesignature", "Embed Time Signature:") }}
-                                    {{ twind_checkbox("embed_acousticness", "Embed Acousticness:") }}
-                                    {{ twind_checkbox("embed_danceability", "Embed Danceability:") }}
-                                    {{ twind_checkbox("embed_energy", "Embed Energy:") }}
-                                    {{ twind_checkbox("embed_instrumentalness", "Embed Instrumentalness:") }}
-                                    {{ twind_checkbox("embed_liveness", "Embed Liveness:") }}
-                                    {{ twind_checkbox("embed_loudness", "Embed Loudness:") }}
-                                    {{ twind_checkbox("embed_speechiness", "Embed Speechiness:") }}
-                                    {{ twind_checkbox("embed_valence", "Embed Valence:") }}
+                                    {{ text_input("metadata_separator", "Metadata Separator:", "Enter metadata separator") }}
+                                    {{ checkbox("overwrite_existing_metadata", "Overwrite Existing Metadata:") }}
+                                    {{ checkbox("embed_branding", "Embed Branding:") }}
+                                    {{ checkbox("embed_cover", "Embed Cover:") }}
+                                    {{ checkbox("embed_artist", "Embed Artist:") }}
+                                    {{ checkbox("embed_album", "Embed Album:") }}
+                                    {{ checkbox("embed_albumartist", "Embed Album Artist:") }}
+                                    {{ checkbox("embed_name", "Embed Name:") }}
+                                    {{ checkbox("embed_year", "Embed Year:") }}
+                                    {{ checkbox("embed_discnumber", "Embed Disc Number:") }}
+                                    {{ checkbox("embed_tracknumber", "Embed Track Number:") }}
+                                    {{ checkbox("embed_genre", "Embed Genre:") }}
+                                    {{ checkbox("embed_performers", "Embed Performers:") }}
+                                    {{ checkbox("embed_producers", "Embed Producers:") }}
+                                    {{ checkbox("embed_writers", "Embed Writers:") }}
+                                    {{ checkbox("embed_label", "Embed Label:") }}
+                                    {{ checkbox("embed_copyright", "Embed Copyright:") }}
+                                    {{ checkbox("embed_description", "Embed Description:") }}
+                                    {{ checkbox("embed_language", "Embed Language:") }}
+                                    {{ checkbox("embed_isrc", "Embed ISRC:") }}
+                                    {{ checkbox("embed_length", "Embed Length:") }}
+                                    {{ checkbox("embed_url", "Embed URL:") }}
+                                    {{ checkbox("embed_key", "Embed Key:") }}
+                                    {{ checkbox("embed_bpm", "Embed BPM:") }}
+                                    {{ checkbox("embed_compilation", "Embed Compilation:") }}
+                                    {{ checkbox("embed_lyrics", "Embed Lyrics:") }}
+                                    {{ checkbox("embed_explicit", "Embed Explicit:") }}
+                                    {{ checkbox("embed_upc", "Embed UPC:") }}
+                                    {{ checkbox("embed_service_id", "Embed Service ID:") }}
+                                    {{ checkbox("embed_timesignature", "Embed Time Signature:") }}
+                                    {{ checkbox("embed_acousticness", "Embed Acousticness:") }}
+                                    {{ checkbox("embed_danceability", "Embed Danceability:") }}
+                                    {{ checkbox("embed_energy", "Embed Energy:") }}
+                                    {{ checkbox("embed_instrumentalness", "Embed Instrumentalness:") }}
+                                    {{ checkbox("embed_liveness", "Embed Liveness:") }}
+                                    {{ checkbox("embed_loudness", "Embed Loudness:") }}
+                                    {{ checkbox("embed_speechiness", "Embed Speechiness:") }}
+                                    {{ checkbox("embed_valence", "Embed Valence:") }}
                                 </tbody>
                             </table>
                         </div>
@@ -301,17 +301,17 @@
                                     <col class="w-1/2">
                                 </colgroup>
                                 <tbody>
-                                    {{ twind_text_input("video_download_path", "Video Download Path:", "Enter video download path") }}
-                                    {{ twind_text_input("movie_file_format", "Movie File Format:", "Enter movie file format") }}
-                                    {{ twind_text_input("movie_path_formatter", "Movie Path Formatter:", "Enter movie path format") }}
-                                    {{ twind_text_input("show_file_format", "Show File Format:", "Enter show file format") }}
-                                    {{ twind_text_input("show_path_formatter", "Show Path Formatter:", "Enter show path format") }}
-                                    {{ twind_number_input("preferred_video_resolution", "Preferred Video Resolution:", "Enter max video resolution") }}
-                                    {{ twind_checkbox("download_subtitles", "Download Subtitles:") }}
-                                    {{ twind_text_input("preferred_audio_language", "Preferred Audio Language:", "Enter preferred audio language") }}
-                                    {{ twind_text_input("preferred_subtitle_language", "Preferred Subtitle Language:", "Enter preferred subtitle language") }}
-                                    {{ twind_checkbox("download_all_available_audio", "Download All Available Audio:") }}
-                                    {{ twind_checkbox("download_all_available_subtitles", "Download All Available Subtitles:") }}
+                                    {{ text_input("video_download_path", "Video Download Path:", "Enter video download path") }}
+                                    {{ text_input("movie_file_format", "Movie File Format:", "Enter movie file format") }}
+                                    {{ text_input("movie_path_formatter", "Movie Path Formatter:", "Enter movie path format") }}
+                                    {{ text_input("show_file_format", "Show File Format:", "Enter show file format") }}
+                                    {{ text_input("show_path_formatter", "Show Path Formatter:", "Enter show path format") }}
+                                    {{ number_input("preferred_video_resolution", "Preferred Video Resolution:", "Enter max video resolution") }}
+                                    {{ checkbox("download_subtitles", "Download Subtitles:") }}
+                                    {{ text_input("preferred_audio_language", "Preferred Audio Language:", "Enter preferred audio language") }}
+                                    {{ text_input("preferred_subtitle_language", "Preferred Subtitle Language:", "Enter preferred subtitle language") }}
+                                    {{ checkbox("download_all_available_audio", "Download All Available Audio:") }}
+                                    {{ checkbox("download_all_available_subtitles", "Download All Available Subtitles:") }}
                                 </tbody>
                             </table>
                         </div>

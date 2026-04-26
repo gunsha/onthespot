@@ -4,11 +4,11 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OnTheSpot - Search</title>
-        <script src="{{ url_for('static', filename='utils.js') }}" defer></script>
-        <script src="{{ url_for('static', filename='alpine.min.js') }}" defer></script>
-        <link href="{{ url_for('static', filename='daisyui.min.css') }}" rel="stylesheet" type="text/css" />
-        <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css" />
-        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+        <script src="/web/utils.js" defer></script>
+        <script src="/web/alpine.min.js" defer></script>
+        <link href="/web/daisyui.min.css" rel="stylesheet" type="text/css" />
+        <link href="/web/styles.css" rel="stylesheet" type="text/css" />
+        <link rel="icon" href="/web/favicon.ico" type="image/x-icon">
     </head>
     <body class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10" x-data="{
         query: '',
@@ -23,6 +23,15 @@
             enable_search_episodes: false,
             enable_search_podcasts: false,
             enable_search_audiobooks: false,
+        },
+        toastMessage: '',
+        showToast: false,
+        toastType: 'alert-success',
+        displayToast(msg, type = 'alert-success') {
+            this.toastMessage = msg;
+            this.toastType = type;
+            this.showToast = true;
+            setTimeout(() => { this.showToast = false; }, 3000);
         },
         init() {
             fetch('/api/config').then(r => r.json()).then(d => {
@@ -45,18 +54,26 @@
                 });
         },
         handleDownload(url) {
-            fetch(`/api/parse_url/${encodeURIComponent(url)}`, {
+            const formData = new FormData();
+            formData.append('url', url);
+            fetch('/api/parse_url', {
                 method: 'POST',
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    this.displayToast('Added to download queue!');
                     console.log('Download successful');
                 } else {
+                    this.displayToast('Download failed: ' + data.error, 'alert-error');
                     console.error('Download failed:', data.error);
                 }
             })
             .catch(error => console.error('Error:', error));
+        },
+        openLink(url) {
+            window.open(url, '_blank');
         },
         saveFilters() {
             updateSettings(this.filters);
@@ -132,15 +149,24 @@
                                 </div>
                             </div>
                             
-                            <button @click="copyToClipboard(item.item_url)" class="btn btn-square btn-ghost" title="Copy Link">
-                                <img src="icons/link.png" loading="lazy" alt="Copy Link" class="w-5 h-5">
+                            <button @click="openLink(item.item_url)" class="btn btn-square btn-ghost" title="Open in Browser">
+                                <img src="icons/open-outline.svg" loading="lazy" alt="Open in Browser" class="w-5 h-5 invert opacity-80">
+                            </button>
+                            <button @click="copyToClipboard(item.item_url); displayToast('Link copied to clipboard!')" class="btn btn-square btn-ghost" title="Copy Link">
+                                <img src="icons/copy-outline.svg" loading="lazy" alt="Copy Link" class="w-5 h-5 invert opacity-80">
                             </button>
                             <button @click="handleDownload(item.item_url)" class="btn btn-square btn-ghost" title="Download">
-                                <img src="icons/download.png" loading="lazy" alt="Download" class="w-5 h-5">
+                                <img src="icons/download-outline.svg" loading="lazy" alt="Download" class="w-5 h-5 invert opacity-80">
                             </button>
                         </li>
                     </template>
                 </ul>
+            </div>
+        </div>
+        
+        <div x-show="showToast" class="toast toast-bottom toast-end z-50" style="display: none;" x-transition>
+            <div class="alert text-white" :class="toastType">
+                <span x-text="toastMessage"></span>
             </div>
         </div>
     </body>

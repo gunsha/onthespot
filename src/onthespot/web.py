@@ -68,6 +68,7 @@ class QueueWorker(threading.Thread):
                                 'playlist_name': item.get('playlist_name'),
                                 'playlist_by': item.get('playlist_by'),
                                 'playlist_number': item.get('playlist_number'),
+                                'album_name': item_metadata.get('album_name'),
                                 'item_thumbnail': item_metadata["image_url"],
                                 'item_url': item_metadata["item_url"],
                                 'progress': 0
@@ -294,11 +295,16 @@ def download_media(local_id):
     else:
         return send_file(os.path.join(cache_dir(), "logs", config.session_uuid, "onthespot.log"), as_attachment=True)
 
-@app.route('/api/parse_url/<path:url>', methods=['POST'])
+@app.route('/api/parse_url', methods=['POST'])
 @login_required
-def parse_download(url):
-    parse_url(url)
-    return jsonify(success=True)
+def parse_download():
+    url = request.form.get('url')
+    if not url and request.is_json:
+        url = request.json.get('url')
+    if url:
+        parse_url(url)
+        return jsonify(success=True)
+    return jsonify(success=False, error="URL not provided"), 400
 
 
 @app.route('/api/delete/<path:local_id>', methods=['DELETE'])
