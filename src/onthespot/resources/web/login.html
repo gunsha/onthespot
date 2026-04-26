@@ -1,39 +1,54 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>OnTheSpot - Login</title>
-        <script src="/web/alpine.min.js" defer></script>
-        <link href="/web/daisyui.min.css" rel="stylesheet" type="text/css" />
-        <link href="/web/styles.css" rel="stylesheet" type="text/css" />
-        <link rel="icon" href="/web/favicon.ico" type="image/x-icon">
-    </head>
-    <body class="flex justify-center mx-auto pt-20 text-center m-0 bg-base-100 min-h-screen">
-        <div class="mx-auto text-center w-full max-w-[600px] p-4">
-            <h1 class="text-3xl font-bold mb-4">OnTheSpot - Login</h1>
-            <div class="inline-block align-middle md:mr-4 mb-4">
-                <img src="icons/onthespot.png" alt="OnTheSpot logo" class="h-[11em]">
-            </div>
-            <div class="inline-block align-middle p-2.5 text-left bg-base-200 rounded-xl shadow-lg w-full max-w-xs">
-                <form id="loginform" method="POST" class="flex flex-col gap-4">
-                    <div class="form-control">
-                        <label for="username" class="label">
-                            <span class="label-text">Username</span>
-                        </label>
-                        <input type="text" id="username" name="username" autocomplete="username" autofocus="" required="" class="input input-bordered w-full focus:input-primary">
-                    </div>
-                    <div class="form-control">
-                        <label for="password" class="label">
-                            <span class="label-text">Password</span>
-                        </label>
-                        <input type="password" id="password" name="password" autocomplete="current-password" required="" class="input input-bordered w-full focus:input-primary">
-                    </div>
-                    <div class="form-control mt-2">
-                        <input type="submit" id="loginButton" value="Login" class="btn btn-primary w-full">
-                    </div>
-                </form>
-            </div>
-        </div>
-    </body>
+<!doctype html>
+<html lang="en" data-theme="forest">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OnTheSpot - Login</title>
+    <script src="/web/alpine.min.js" defer></script>
+    <link href="/web/daisyui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/web/styles.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="/web/favicon.ico" type="image/x-icon" />
+  </head>
+  <body class="flex justify-center mx-auto pt-20 text-center m-0 bg-base-100 min-h-screen">
+    <div class="mx-auto text-center w-full max-w-[600px] p-4">
+      <h1 class="text-3xl font-bold mb-4">OnTheSpot - Login</h1>
+      <div class="inline-block align-middle md:mr-4 mb-4">
+        <img src="icons/onthespot.png" alt="OnTheSpot logo" class="h-[11em]" />
+      </div>
+      <div class="inline-block align-middle p-2.5 text-left bg-base-200 rounded-xl shadow-lg w-full max-w-xs">
+        <form id="loginform" method="POST" class="flex flex-col gap-4">
+          <div class="form-control">
+            <label for="username" class="label">
+              <span class="label-text">Username</span>
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              autocomplete="username"
+              autofocus=""
+              required=""
+              class="input input-bordered w-full focus:input-primary"
+            />
+          </div>
+          <div class="form-control">
+            <label for="password" class="label">
+              <span class="label-text">Password</span>
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              required=""
+              class="input input-bordered w-full focus:input-primary"
+            />
+          </div>
+          <div class="form-control mt-2">
+            <input type="submit" id="loginButton" value="Login" class="btn btn-primary w-full" />
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
 </html>

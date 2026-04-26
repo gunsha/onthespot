@@ -1,437 +1,451 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>OnTheSpot - Settings</title>
-        <script src="/web/utils.js" defer></script>
-        <script src="/web/alpine.min.js" defer></script>
-        <link href="/web/daisyui.min.css" rel="stylesheet" type="text/css" />
-        <link href="/web/styles.css" rel="stylesheet" type="text/css" />
-        <link rel="icon" href="/web/favicon.ico" type="image/x-icon">
-    </head>
-    <body class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10">
-        <div class="w-full max-w-full overflow-hidden p-2" x-data="settingsApp()">
-            <ul class="menu menu-horizontal bg-base-100 rounded-box flex-nowrap shadow-lg overflow-x-auto w-full mb-4">
-                <li class="hidden sm:block"><a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-200 font-bold">OnTheSpot</a></li>
-                <li><a href="/search" class="hover:bg-base-200">Search</a></li>
-                <li><a href="/download_queue" class="hover:bg-base-200">Downloads</a></li>
-                <li><a href="/settings" class="active bg-primary text-primary-content shadow-sm font-semibold pointer-events-none">Settings</a></li>
-                <li><a href="/about" class="hover:bg-base-200">About</a></li>
-            </ul>
+<!doctype html>
+<html lang="en" data-theme="forest">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OnTheSpot - Settings</title>
+    <script src="/web/utils.js" defer></script>
+    <script src="/web/alpine.min.js" defer></script>
+    <link href="/web/daisyui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/web/styles.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="/web/favicon.ico" type="image/x-icon" />
+  </head>
+  <body class="m-0 flex flex-col items-center bg-base-300 min-h-screen pb-10">
+    <div class="w-full max-w-full overflow-hidden p-2" x-data="settingsApp()">
+      <ul class="menu menu-horizontal bg-base-100 rounded-box flex-nowrap shadow-lg overflow-x-auto w-full mb-4">
+        <li class="hidden sm:block">
+          <a href="https://github.com/justin025/onthespot/" target="_blank" class="text-primary hover:bg-base-200 font-bold">OnTheSpot</a>
+        </li>
+        <li><a href="/search" class="hover:bg-base-200">Search</a></li>
+        <li><a href="/download_queue" class="hover:bg-base-200">Downloads</a></li>
+        <li><a href="/settings" class="active bg-primary text-primary-content shadow-sm font-semibold pointer-events-none">Settings</a></li>
+        <li><a href="/about" class="hover:bg-base-200">About</a></li>
+      </ul>
 
-            <div class="flex items-center justify-between mb-4 px-2">
-                <div class="flex items-center">
-                    <h2 class="text-xl font-bold">Account Pool</h2>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <template x-if="config.use_webui_login">
-                        <button class="btn btn-square btn-ghost" @click="window.location.href='/api/logout';">
-                            <img src="/icons/leave.png" loading="lazy" class="w-5 h-5">
-                        </button>
-                    </template>
-                    <button class="btn btn-square btn-ghost" @click="saveSettings()">
-                        <img src="/icons/save.png" loading="lazy" class="w-5 h-5">
-                    </button>
-                </div>
-            </div>
-
-            <form @submit.prevent>
-                <div class="w-full overflow-x-auto mb-5">
-                    <table class="table table-zebra table-sm sm:table-md w-full min-w-[700px] shadow-lg rounded-box bg-base-100">
-                        <thead class="bg-base-200 text-base-content text-sm">
-                            <tr>
-                                <th>Active</th>
-                                <th>Username</th>
-                                <th>Service</th>
-                                <th class="hidden sm:table-cell">Account Type</th>
-                                <th>Max Resolution</th>
-                                <th>Status</th>
-                                <th class="hidden sm:table-cell">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template x-for="(account, index) in accountPool" :key="index">
-                            <tr class="hover">
-                                <td>
-                                    <label>
-                                        <input type="radio" name="active_account_number" :value="index" x-model.number="config.active_account_number" @change="saveSettings()" class="radio radio-primary radio-sm">
-                                    </label>
-                                </td>
-                                <td class="max-w-[10px] truncate" x-text="account.username.length > 20 ? account.username.substring(0, 20) + '...' : account.username"></td>
-                                <td>
-                                    <div class="flex items-center gap-2">
-                                        <img :src="'/icons/' + account.service + '.png'" loading="lazy" class="w-5 h-5">
-                                        <span class="hidden sm:inline" x-text="account.service.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
-                                    </div>
-                                </td>
-                                <td class="hidden sm:table-cell" x-text="account.account_type.charAt(0).toUpperCase() + account.account_type.slice(1)"></td>
-                                <td x-text="account.bitrate"></td>
-                                <td x-text="account.status.charAt(0).toUpperCase() + account.status.slice(1)"></td>
-                                <td class="hidden sm:table-cell">
-                                    <button :value="account.uuid" class="btn btn-square btn-ghost btn-sm" @click="removeAccount(account.uuid)">
-                                        <img src="/icons/trash.png" loading="lazy" class="w-4 h-4">
-                                    </button>
-                                </td>
-                            </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </form>
-
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center mt-5 px-2 gap-3">
-                <select id="login_services" x-model="newAccount.service" @change="handleServiceChange()" class="select select-bordered focus:select-primary w-full sm:max-w-xs">
-                    <option value="" disabled>Audio:</option>
-                    <option value="apple_music">Apple Music</option>
-                    <option value="bandcamp">Bandcamp</option>
-                    <option value="deezer">Deezer</option>
-                    <option value="qobuz" selected>Qobuz</option>
-                    <option value="soundcloud">Soundcloud</option>
-                    <option value="spotify">Spotify</option>
-                    <option value="tidal">Tidal</option>
-                    <option value="youtube_music">Youtube Music</option>
-                    <option value="" disabled></option>
-                    <option value="" disabled>Video:</option>
-                    <option value="crunchyroll">Crunchyroll</option>
-                    <option value="generic">Generic</option>
-                </select>
-                <input type="text" x-model="newAccount.username" x-show="showUsernameInput" :placeholder="usernamePlaceholder" class="input input-bordered focus:input-primary w-full sm:max-w-[250px]">
-                <input type="text" x-model="newAccount.password" x-show="showPasswordInput" :placeholder="passwordPlaceholder" class="input input-bordered focus:input-primary w-full sm:max-w-[250px]">
-                <button type="button" @click="addAccount()" x-show="showAddButton" x-text="addButtonText" class="btn btn-primary w-full sm:w-auto">Add Account</button>
-                <p x-show="showNotice" x-text="noticeText" class="text-error text-xs m-0"></p>
-            </div>
-            <br class="hidden sm:block">
-
-            {% macro checkbox(id, label_text) %}
-            <tr class="hover">
-                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}" class="cursor-pointer">{{ label_text }}</label></td>
-                <td class="p-3 w-1/2 align-middle">
-                    <input type="checkbox" id="{{ id }}" x-model="config.{{ id }}" class="toggle toggle-primary">
-                </td>
-            </tr>
-            {% endmacro %}
-
-            {% macro text_input(id, label_text, placeholder) %}
-            <tr class="hover">
-                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
-                <td class="p-3 w-1/2 align-middle">
-                    <input type="text" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md">
-                </td>
-            </tr>
-            {% endmacro %}
-            
-            {% macro password_input(id, label_text, placeholder) %}
-            <tr class="hover">
-                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
-                <td class="p-3 w-1/2 align-middle">
-                    <input type="password" id="{{ id }}" x-model="config.{{ id }}" placeholder="{{ placeholder }}" class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md">
-                </td>
-            </tr>
-            {% endmacro %}
-
-            {% macro number_input(id, label_text, placeholder) %}
-            <tr class="hover">
-                <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
-                <td class="p-3 w-1/2 align-middle">
-                    <input type="number" id="{{ id }}" x-model.number="config.{{ id }}" placeholder="{{ placeholder }}" class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md">
-                </td>
-            </tr>
-            {% endmacro %}
-
-            <form id="settings-form" @submit.prevent>
-
-                <div class="card bg-base-100 shadow-xl mb-6 mx-2 mt-6">
-                    <div class="card-body p-4 sm:p-6">
-                        <h2 class="card-title text-xl mb-4">Web UIs</h2>
-                        <div class="w-full overflow-x-auto">
-                            <table class="table w-full">
-                                <colgroup>
-                                    <col class="w-1/2">
-                                    <col class="w-1/2">
-                                </colgroup>
-                                <tbody>
-                                    {{ checkbox("use_webui_login", "Enable Web UI Login Page:") }}
-                                    {{ text_input("webui_username", "Web UI Username:", "Enter your username") }}
-                                    {{ password_input("webui_password", "Web UI Password:", "Enter your password") }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
-                    <div class="card-body p-4 sm:p-6">
-                        <h2 class="card-title text-xl mb-4">General</h2>
-                        <div class="w-full overflow-x-auto">
-                            <table class="table w-full">
-                                <colgroup>
-                                    <col class="w-1/2">
-                                    <col class="w-1/2">
-                                </colgroup>
-                                <tbody>
-                                    {{ text_input("explicit_label", "Explicit Label:", "Enter explicit label") }}
-                                    {{ checkbox("download_copy_btn", "Add Copy Button to Downloads:") }}
-                                    {{ checkbox("download_open_btn", "Add Open Button to Downloads:") }}
-                                    {{ checkbox("download_locate_btn", "Add Locate Button to Downloads:") }}
-                                    {{ checkbox("download_delete_btn", "Add Delete Button to Downloads:") }}
-                                    {{ checkbox("show_search_thumbnails", "Show Thumbnails in Search View:") }}
-                                    {{ checkbox("show_download_thumbnails", "Show Thumbnails in Download View:") }}
-                                    {{ number_input("thumbnail_size", "Thumbnail Size (px):", "Enter thumbnail size") }}
-                                    {{ number_input("max_search_results", "Max Search Results:", "Enter max search results") }}
-                                    {{ checkbox("disable_download_popups", "Hide Download Popups:") }}
-                                    {{ checkbox("windows_10_explorer_thumbnails", "Use Old ID3 Format for Windows 10 Explorer:") }}
-                                    {{ checkbox("mirror_spotify_playback", "Mirror Spotify Playback:") }}
-                                    {{ checkbox("close_to_tray", "Close Application to Tray:") }}
-                                    {{ checkbox("check_for_updates", "Check for Updates:") }}
-                                    {{ text_input("illegal_character_replacement", "Illegal Character Replacement:", "Enter character for replacement") }}
-                                    {{ checkbox("raw_media_download", "Skip Media Conversion:") }}
-                                    {{ checkbox("rotate_active_account_number", "Rotate Active Account:") }}
-                                    {{ number_input("download_delay", "Download Delay (seconds):", "Enter download delay") }}
-                                    {{ number_input("download_chunk_size", "Download Chunk Size (bytes):", "Enter chunk size") }}
-                                    {{ number_input("maximum_queue_workers", "Maximum Queue Workers:", "Enter max queue workers") }}
-                                    {{ number_input("maximum_download_workers", "Maximum Download Workers:", "Enter max download workers") }}
-                                    {{ checkbox("enable_retry_worker", "Enable Retry Worker:") }}
-                                    {{ number_input("retry_worker_delay", "Retry Worker Delay (minutes):", "Enter retry delay") }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
-                    <div class="card-body p-4 sm:p-6">
-                        <h2 class="card-title text-xl mb-4">Audio Downloads</h2>
-                        <div class="w-full overflow-x-auto">
-                            <table class="table w-full">
-                                <colgroup>
-                                    <col class="w-1/2">
-                                    <col class="w-1/2">
-                                </colgroup>
-                                <tbody>
-                                    {{ text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }}
-                                    {{ text_input("track_file_format", "Track File Format:", "Enter track file format") }}
-                                    {{ text_input("track_path_formatter", "Track Path Formatter:", "Enter track path format") }}
-                                    {{ text_input("podcast_file_format", "Podcast File Format:", "Enter podcast file format") }}
-                                    {{ text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format") }}
-                                    {{ checkbox("use_playlist_path", "Use Playlist Path:") }}
-                                    {{ text_input("playlist_path_formatter", "Playlist Path Formatter:", "Enter playlist path format") }}
-                                    {{ checkbox("create_m3u_file", "Create M3U File:") }}
-                                    {{ text_input("m3u_path_formatter", "M3U Path Formatter:", "Enter M3U path format") }}
-                                    {{ text_input("extinf_separator", "EXTINF Separator:", "Enter EXTINF metadata separator") }}
-                                    {{ text_input("extinf_label", "EXTINF Label:", "Enter EXTINF label format") }}
-                                    {{ checkbox("save_album_cover", "Save Album Cover:") }}
-                                    {{ text_input("album_cover_format", "Album Cover Format:", "Enter album cover format") }}
-                                    {{ text_input("file_bitrate", "File Bitrate:", "Enter file bitrate") }}
-                                    {{ number_input("file_hertz", "File Hertz:", "Enter file hertz") }}
-                                    {{ checkbox("use_custom_file_bitrate", "Use Custom File Bitrate:") }}
-                                    {{ checkbox("download_lyrics", "Enable Lyrics Download:") }}
-                                    {{ checkbox("only_download_synced_lyrics", "Only Download Synced Lyrics:") }}
-                                    {{ checkbox("only_download_plain_lyrics", "Only Download Plain Lyrics:") }}
-                                    {{ checkbox("save_lrc_file", "Save LRC File:") }}
-                                    {{ checkbox("translate_file_path", "Translate File Path:") }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
-                    <div class="card-body p-4 sm:p-6">
-                        <h2 class="card-title text-xl mb-4">Audio Metadata</h2>
-                        <div class="w-full overflow-x-auto">
-                            <table class="table w-full">
-                                <colgroup>
-                                    <col class="w-1/2">
-                                    <col class="w-1/2">
-                                </colgroup>
-                                <tbody>
-                                    {{ text_input("metadata_separator", "Metadata Separator:", "Enter metadata separator") }}
-                                    {{ checkbox("overwrite_existing_metadata", "Overwrite Existing Metadata:") }}
-                                    {{ checkbox("embed_branding", "Embed Branding:") }}
-                                    {{ checkbox("embed_cover", "Embed Cover:") }}
-                                    {{ checkbox("embed_artist", "Embed Artist:") }}
-                                    {{ checkbox("embed_album", "Embed Album:") }}
-                                    {{ checkbox("embed_albumartist", "Embed Album Artist:") }}
-                                    {{ checkbox("embed_name", "Embed Name:") }}
-                                    {{ checkbox("embed_year", "Embed Year:") }}
-                                    {{ checkbox("embed_discnumber", "Embed Disc Number:") }}
-                                    {{ checkbox("embed_tracknumber", "Embed Track Number:") }}
-                                    {{ checkbox("embed_genre", "Embed Genre:") }}
-                                    {{ checkbox("embed_performers", "Embed Performers:") }}
-                                    {{ checkbox("embed_producers", "Embed Producers:") }}
-                                    {{ checkbox("embed_writers", "Embed Writers:") }}
-                                    {{ checkbox("embed_label", "Embed Label:") }}
-                                    {{ checkbox("embed_copyright", "Embed Copyright:") }}
-                                    {{ checkbox("embed_description", "Embed Description:") }}
-                                    {{ checkbox("embed_language", "Embed Language:") }}
-                                    {{ checkbox("embed_isrc", "Embed ISRC:") }}
-                                    {{ checkbox("embed_length", "Embed Length:") }}
-                                    {{ checkbox("embed_url", "Embed URL:") }}
-                                    {{ checkbox("embed_key", "Embed Key:") }}
-                                    {{ checkbox("embed_bpm", "Embed BPM:") }}
-                                    {{ checkbox("embed_compilation", "Embed Compilation:") }}
-                                    {{ checkbox("embed_lyrics", "Embed Lyrics:") }}
-                                    {{ checkbox("embed_explicit", "Embed Explicit:") }}
-                                    {{ checkbox("embed_upc", "Embed UPC:") }}
-                                    {{ checkbox("embed_service_id", "Embed Service ID:") }}
-                                    {{ checkbox("embed_timesignature", "Embed Time Signature:") }}
-                                    {{ checkbox("embed_acousticness", "Embed Acousticness:") }}
-                                    {{ checkbox("embed_danceability", "Embed Danceability:") }}
-                                    {{ checkbox("embed_energy", "Embed Energy:") }}
-                                    {{ checkbox("embed_instrumentalness", "Embed Instrumentalness:") }}
-                                    {{ checkbox("embed_liveness", "Embed Liveness:") }}
-                                    {{ checkbox("embed_loudness", "Embed Loudness:") }}
-                                    {{ checkbox("embed_speechiness", "Embed Speechiness:") }}
-                                    {{ checkbox("embed_valence", "Embed Valence:") }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card bg-base-100 shadow-xl mb-6 mx-2">
-                    <div class="card-body p-4 sm:p-6">
-                        <h2 class="card-title text-xl mb-4">Video Downloads</h2>
-                        <div class="w-full overflow-x-auto">
-                            <table class="table w-full">
-                                <colgroup>
-                                    <col class="w-1/2">
-                                    <col class="w-1/2">
-                                </colgroup>
-                                <tbody>
-                                    {{ text_input("video_download_path", "Video Download Path:", "Enter video download path") }}
-                                    {{ text_input("movie_file_format", "Movie File Format:", "Enter movie file format") }}
-                                    {{ text_input("movie_path_formatter", "Movie Path Formatter:", "Enter movie path format") }}
-                                    {{ text_input("show_file_format", "Show File Format:", "Enter show file format") }}
-                                    {{ text_input("show_path_formatter", "Show Path Formatter:", "Enter show path format") }}
-                                    {{ number_input("preferred_video_resolution", "Preferred Video Resolution:", "Enter max video resolution") }}
-                                    {{ checkbox("download_subtitles", "Download Subtitles:") }}
-                                    {{ text_input("preferred_audio_language", "Preferred Audio Language:", "Enter preferred audio language") }}
-                                    {{ text_input("preferred_subtitle_language", "Preferred Subtitle Language:", "Enter preferred subtitle language") }}
-                                    {{ checkbox("download_all_available_audio", "Download All Available Audio:") }}
-                                    {{ checkbox("download_all_available_subtitles", "Download All Available Subtitles:") }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </form>
+      <div class="flex items-center justify-between mb-4 px-2">
+        <div class="flex items-center">
+          <h2 class="text-xl font-bold">Account Pool</h2>
         </div>
 
-        <script>
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('settingsApp', () => ({
-                    config: {},
-                    accountPool: [],
-                    newAccount: {
-                        service: 'qobuz',
-                        username: '',
-                        password: ''
-                    },
-                    showUsernameInput: true,
-                    showPasswordInput: true,
-                    showAddButton: true,
-                    showNotice: false,
-                    usernamePlaceholder: 'Enter your email',
-                    passwordPlaceholder: 'Enter your password',
-                    addButtonText: 'Add Account',
-                    noticeText: '',
+        <div class="flex items-center gap-2">
+          <template x-if="config.use_webui_login">
+            <button class="btn btn-square btn-ghost" @click="window.location.href='/api/logout';">
+              <img src="/icons/leave.png" loading="lazy" class="w-5 h-5" />
+            </button>
+          </template>
+          <button class="btn btn-square btn-ghost" @click="saveSettings()">
+            <img src="/icons/save.png" loading="lazy" class="w-5 h-5" />
+          </button>
+        </div>
+      </div>
 
-                    init() {
-                        this.handleServiceChange();
-                        fetch('/api/config')
-                            .then(r => r.json())
-                            .then(data => {
-                                this.config = data.config || {};
-                                this.accountPool = data.account_pool || [];
-                            });
-                    },
+      <form @submit.prevent>
+        <div class="w-full overflow-x-auto mb-5">
+          <table class="table table-zebra table-sm sm:table-md w-full min-w-[700px] shadow-lg rounded-box bg-base-100">
+            <thead class="bg-base-200 text-base-content text-sm">
+              <tr>
+                <th>Active</th>
+                <th>Username</th>
+                <th>Service</th>
+                <th class="hidden sm:table-cell">Account Type</th>
+                <th>Max Resolution</th>
+                <th>Status</th>
+                <th class="hidden sm:table-cell">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="(account, index) in accountPool" :key="index">
+                <tr class="hover">
+                  <td>
+                    <label>
+                      <input
+                        type="radio"
+                        name="active_account_number"
+                        :value="index"
+                        x-model.number="config.active_account_number"
+                        @change="saveSettings()"
+                        class="radio radio-primary radio-sm"
+                      />
+                    </label>
+                  </td>
+                  <td
+                    class="max-w-[10px] truncate"
+                    x-text="account.username.length > 20 ? account.username.substring(0, 20) + '...' : account.username"
+                  ></td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <img :src="'/icons/' + account.service + '.png'" loading="lazy" class="w-5 h-5" />
+                      <span
+                        class="hidden sm:inline"
+                        x-text="account.service.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())"
+                      ></span>
+                    </div>
+                  </td>
+                  <td
+                    class="hidden sm:table-cell"
+                    x-text="account.account_type.charAt(0).toUpperCase() + account.account_type.slice(1)"
+                  ></td>
+                  <td x-text="account.bitrate"></td>
+                  <td x-text="account.status.charAt(0).toUpperCase() + account.status.slice(1)"></td>
+                  <td class="hidden sm:table-cell">
+                    <button :value="account.uuid" class="btn btn-square btn-ghost btn-sm" @click="removeAccount(account.uuid)">
+                      <img src="/icons/trash.png" loading="lazy" class="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </form>
 
-                    saveSettings() {
-                        // The config object bound via x-model contains everything.
-                        updateSettings(this.config);
-                    },
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center mt-5 px-2 gap-3">
+        <select
+          id="login_services"
+          x-model="newAccount.service"
+          @change="handleServiceChange()"
+          class="select select-bordered focus:select-primary w-full sm:max-w-xs"
+        >
+          <option value="" disabled>Audio:</option>
+          <option value="apple_music">Apple Music</option>
+          <option value="bandcamp">Bandcamp</option>
+          <option value="deezer">Deezer</option>
+          <option value="qobuz" selected>Qobuz</option>
+          <option value="soundcloud">Soundcloud</option>
+          <option value="spotify">Spotify</option>
+          <option value="tidal">Tidal</option>
+          <option value="youtube_music">Youtube Music</option>
+          <option value="" disabled></option>
+          <option value="" disabled>Video:</option>
+          <option value="crunchyroll">Crunchyroll</option>
+          <option value="generic">Generic</option>
+        </select>
+        <input
+          type="text"
+          x-model="newAccount.username"
+          x-show="showUsernameInput"
+          :placeholder="usernamePlaceholder"
+          class="input input-bordered focus:input-primary w-full sm:max-w-[250px]"
+        />
+        <input
+          type="text"
+          x-model="newAccount.password"
+          x-show="showPasswordInput"
+          :placeholder="passwordPlaceholder"
+          class="input input-bordered focus:input-primary w-full sm:max-w-[250px]"
+        />
+        <button type="button" @click="addAccount()" x-show="showAddButton" x-text="addButtonText" class="btn btn-primary w-full sm:w-auto">
+          Add Account
+        </button>
+        <p x-show="showNotice" x-text="noticeText" class="text-error text-xs m-0"></p>
+      </div>
+      <br class="hidden sm:block" />
 
-                    handleServiceChange() {
-                        const s = this.newAccount.service;
-                        this.showUsernameInput = false;
-                        this.showPasswordInput = false;
-                        this.showAddButton = false;
-                        this.showNotice = false;
-                        
-                        if (s === 'apple_music') {
-                            this.showPasswordInput = true;
-                            this.passwordPlaceholder = 'Enter your user-media-token';
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Account';
-                        } else if (s === 'bandcamp') {
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Public Bandcamp Account';
-                        } else if (s === 'deezer') {
-                            this.showPasswordInput = true;
-                            this.passwordPlaceholder = 'Enter your arl';
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Account';
-                        } else if (s === 'qobuz') {
-                            this.showUsernameInput = true;
-                            this.usernamePlaceholder = 'Enter your email';
-                            this.showPasswordInput = true;
-                            this.passwordPlaceholder = 'Enter your password';
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Account';
-                        } else if (s === 'soundcloud') {
-                            this.showPasswordInput = true;
-                            this.passwordPlaceholder = 'Enter your oauth-token';
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Account';
-                        } else if (s === 'spotify') {
-                            this.showNotice = true;
-                            this.noticeText = 'Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.';
-                        } else if (s === 'tidal') {
-                            this.showNotice = true;
-                            this.noticeText = 'Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.';
-                        } else if (s === 'youtube_music') {
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Public Youtube Music Account';
-                        } else if (s === 'crunchyroll') {
-                            this.showUsernameInput = true;
-                            this.usernamePlaceholder = 'Enter your email';
-                            this.showPasswordInput = true;
-                            this.passwordPlaceholder = 'Enter your password';
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Account';
-                        } else if (s === 'generic') {
-                            this.showAddButton = true;
-                            this.addButtonText = 'Add Generic Account';
-                        }
-                    },
+      {% macro checkbox(id, label_text) %}
+      <tr class="hover">
+        <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}" class="cursor-pointer">{{ label_text }}</label></td>
+        <td class="p-3 w-1/2 align-middle">
+          <input type="checkbox" id="{{ id }}" x-model="config.{{ id }}" class="toggle toggle-primary" />
+        </td>
+      </tr>
+      {% endmacro %} {% macro text_input(id, label_text, placeholder) %}
+      <tr class="hover">
+        <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
+        <td class="p-3 w-1/2 align-middle">
+          <input
+            type="text"
+            id="{{ id }}"
+            x-model="config.{{ id }}"
+            placeholder="{{ placeholder }}"
+            class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md"
+          />
+        </td>
+      </tr>
+      {% endmacro %} {% macro password_input(id, label_text, placeholder) %}
+      <tr class="hover">
+        <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
+        <td class="p-3 w-1/2 align-middle">
+          <input
+            type="password"
+            id="{{ id }}"
+            x-model="config.{{ id }}"
+            placeholder="{{ placeholder }}"
+            class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md"
+          />
+        </td>
+      </tr>
+      {% endmacro %} {% macro number_input(id, label_text, placeholder) %}
+      <tr class="hover">
+        <td class="p-3 w-1/2 align-middle font-medium"><label for="{{ id }}">{{ label_text }}</label></td>
+        <td class="p-3 w-1/2 align-middle">
+          <input
+            type="number"
+            id="{{ id }}"
+            x-model.number="config.{{ id }}"
+            placeholder="{{ placeholder }}"
+            class="input input-bordered w-full max-w-xs focus:input-primary input-sm sm:input-md"
+          />
+        </td>
+      </tr>
+      {% endmacro %}
 
-                    addAccount() {
-                        fetch('/api/add_account', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.newAccount)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('Success:', data);
-                            alert('Account added successfully! Please restart the app.');
-                        })
-                        .catch(error => console.error('Error:', error));
-                    },
+      <form id="settings-form" @submit.prevent>
+        <div class="card bg-base-100 shadow-xl mb-6 mx-2 mt-6">
+          <div class="card-body p-4 sm:p-6">
+            <h2 class="card-title text-xl mb-4">Web UIs</h2>
+            <div class="w-full overflow-x-auto">
+              <table class="table w-full">
+                <colgroup>
+                  <col class="w-1/2" />
+                  <col class="w-1/2" />
+                </colgroup>
+                <tbody>
+                  {{ checkbox("use_webui_login", "Enable Web UI Login Page:") }} {{ text_input("webui_username", "Web UI Username:", "Enter
+                  your username") }} {{ password_input("webui_password", "Web UI Password:", "Enter your password") }}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-                    removeAccount(accountId) {
-                        fetch(`/api/remove_account/${accountId}`, { method: 'DELETE' })
-                        .then(response => {
-                            if (response.ok) {
-                                alert('Account removed successfully! Please restart the app.');
-                            }
-                        });
-                    }
-                }));
+        <div class="card bg-base-100 shadow-xl mb-6 mx-2">
+          <div class="card-body p-4 sm:p-6">
+            <h2 class="card-title text-xl mb-4">General</h2>
+            <div class="w-full overflow-x-auto">
+              <table class="table w-full">
+                <colgroup>
+                  <col class="w-1/2" />
+                  <col class="w-1/2" />
+                </colgroup>
+                <tbody>
+                  {{ text_input("explicit_label", "Explicit Label:", "Enter explicit label") }} {{ checkbox("download_copy_btn", "Add Copy
+                  Button to Downloads:") }} {{ checkbox("download_open_btn", "Add Open Button to Downloads:") }} {{
+                  checkbox("download_locate_btn", "Add Locate Button to Downloads:") }} {{ checkbox("download_delete_btn", "Add Delete
+                  Button to Downloads:") }} {{ checkbox("show_search_thumbnails", "Show Thumbnails in Search View:") }} {{
+                  checkbox("show_download_thumbnails", "Show Thumbnails in Download View:") }} {{ number_input("thumbnail_size", "Thumbnail
+                  Size (px):", "Enter thumbnail size") }} {{ number_input("max_search_results", "Max Search Results:", "Enter max search
+                  results") }} {{ checkbox("disable_download_popups", "Hide Download Popups:") }} {{
+                  checkbox("windows_10_explorer_thumbnails", "Use Old ID3 Format for Windows 10 Explorer:") }} {{
+                  checkbox("mirror_spotify_playback", "Mirror Spotify Playback:") }} {{ checkbox("close_to_tray", "Close Application to
+                  Tray:") }} {{ checkbox("check_for_updates", "Check for Updates:") }} {{ text_input("illegal_character_replacement",
+                  "Illegal Character Replacement:", "Enter character for replacement") }} {{ checkbox("raw_media_download", "Skip Media
+                  Conversion:") }} {{ checkbox("rotate_active_account_number", "Rotate Active Account:") }} {{
+                  number_input("download_delay", "Download Delay (seconds):", "Enter download delay") }} {{
+                  number_input("download_chunk_size", "Download Chunk Size (bytes):", "Enter chunk size") }} {{
+                  number_input("maximum_queue_workers", "Maximum Queue Workers:", "Enter max queue workers") }} {{
+                  number_input("maximum_download_workers", "Maximum Download Workers:", "Enter max download workers") }} {{
+                  checkbox("enable_retry_worker", "Enable Retry Worker:") }} {{ number_input("retry_worker_delay", "Retry Worker Delay
+                  (minutes):", "Enter retry delay") }}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl mb-6 mx-2">
+          <div class="card-body p-4 sm:p-6">
+            <h2 class="card-title text-xl mb-4">Audio Downloads</h2>
+            <div class="w-full overflow-x-auto">
+              <table class="table w-full">
+                <colgroup>
+                  <col class="w-1/2" />
+                  <col class="w-1/2" />
+                </colgroup>
+                <tbody>
+                  {{ text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }} {{
+                  text_input("track_file_format", "Track File Format:", "Enter track file format") }} {{ text_input("track_path_formatter",
+                  "Track Path Formatter:", "Enter track path format") }} {{ text_input("podcast_file_format", "Podcast File Format:", "Enter
+                  podcast file format") }} {{ text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format")
+                  }} {{ checkbox("use_playlist_path", "Use Playlist Path:") }} {{ text_input("playlist_path_formatter", "Playlist Path
+                  Formatter:", "Enter playlist path format") }} {{ checkbox("create_m3u_file", "Create M3U File:") }} {{
+                  text_input("m3u_path_formatter", "M3U Path Formatter:", "Enter M3U path format") }} {{ text_input("extinf_separator",
+                  "EXTINF Separator:", "Enter EXTINF metadata separator") }} {{ text_input("extinf_label", "EXTINF Label:", "Enter EXTINF
+                  label format") }} {{ checkbox("save_album_cover", "Save Album Cover:") }} {{ text_input("album_cover_format", "Album Cover
+                  Format:", "Enter album cover format") }} {{ text_input("file_bitrate", "File Bitrate:", "Enter file bitrate") }} {{
+                  number_input("file_hertz", "File Hertz:", "Enter file hertz") }} {{ checkbox("use_custom_file_bitrate", "Use Custom File
+                  Bitrate:") }} {{ checkbox("download_lyrics", "Enable Lyrics Download:") }} {{ checkbox("only_download_synced_lyrics",
+                  "Only Download Synced Lyrics:") }} {{ checkbox("only_download_plain_lyrics", "Only Download Plain Lyrics:") }} {{
+                  checkbox("save_lrc_file", "Save LRC File:") }} {{ checkbox("translate_file_path", "Translate File Path:") }}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl mb-6 mx-2">
+          <div class="card-body p-4 sm:p-6">
+            <h2 class="card-title text-xl mb-4">Audio Metadata</h2>
+            <div class="w-full overflow-x-auto">
+              <table class="table w-full">
+                <colgroup>
+                  <col class="w-1/2" />
+                  <col class="w-1/2" />
+                </colgroup>
+                <tbody>
+                  {{ text_input("metadata_separator", "Metadata Separator:", "Enter metadata separator") }} {{
+                  checkbox("overwrite_existing_metadata", "Overwrite Existing Metadata:") }} {{ checkbox("embed_branding", "Embed
+                  Branding:") }} {{ checkbox("embed_cover", "Embed Cover:") }} {{ checkbox("embed_artist", "Embed Artist:") }} {{
+                  checkbox("embed_album", "Embed Album:") }} {{ checkbox("embed_albumartist", "Embed Album Artist:") }} {{
+                  checkbox("embed_name", "Embed Name:") }} {{ checkbox("embed_year", "Embed Year:") }} {{ checkbox("embed_discnumber",
+                  "Embed Disc Number:") }} {{ checkbox("embed_tracknumber", "Embed Track Number:") }} {{ checkbox("embed_genre", "Embed
+                  Genre:") }} {{ checkbox("embed_performers", "Embed Performers:") }} {{ checkbox("embed_producers", "Embed Producers:") }}
+                  {{ checkbox("embed_writers", "Embed Writers:") }} {{ checkbox("embed_label", "Embed Label:") }} {{
+                  checkbox("embed_copyright", "Embed Copyright:") }} {{ checkbox("embed_description", "Embed Description:") }} {{
+                  checkbox("embed_language", "Embed Language:") }} {{ checkbox("embed_isrc", "Embed ISRC:") }} {{ checkbox("embed_length",
+                  "Embed Length:") }} {{ checkbox("embed_url", "Embed URL:") }} {{ checkbox("embed_key", "Embed Key:") }} {{
+                  checkbox("embed_bpm", "Embed BPM:") }} {{ checkbox("embed_compilation", "Embed Compilation:") }} {{
+                  checkbox("embed_lyrics", "Embed Lyrics:") }} {{ checkbox("embed_explicit", "Embed Explicit:") }} {{ checkbox("embed_upc",
+                  "Embed UPC:") }} {{ checkbox("embed_service_id", "Embed Service ID:") }} {{ checkbox("embed_timesignature", "Embed Time
+                  Signature:") }} {{ checkbox("embed_acousticness", "Embed Acousticness:") }} {{ checkbox("embed_danceability", "Embed
+                  Danceability:") }} {{ checkbox("embed_energy", "Embed Energy:") }} {{ checkbox("embed_instrumentalness", "Embed
+                  Instrumentalness:") }} {{ checkbox("embed_liveness", "Embed Liveness:") }} {{ checkbox("embed_loudness", "Embed
+                  Loudness:") }} {{ checkbox("embed_speechiness", "Embed Speechiness:") }} {{ checkbox("embed_valence", "Embed Valence:") }}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl mb-6 mx-2">
+          <div class="card-body p-4 sm:p-6">
+            <h2 class="card-title text-xl mb-4">Video Downloads</h2>
+            <div class="w-full overflow-x-auto">
+              <table class="table w-full">
+                <colgroup>
+                  <col class="w-1/2" />
+                  <col class="w-1/2" />
+                </colgroup>
+                <tbody>
+                  {{ text_input("video_download_path", "Video Download Path:", "Enter video download path") }} {{
+                  text_input("movie_file_format", "Movie File Format:", "Enter movie file format") }} {{ text_input("movie_path_formatter",
+                  "Movie Path Formatter:", "Enter movie path format") }} {{ text_input("show_file_format", "Show File Format:", "Enter show
+                  file format") }} {{ text_input("show_path_formatter", "Show Path Formatter:", "Enter show path format") }} {{
+                  number_input("preferred_video_resolution", "Preferred Video Resolution:", "Enter max video resolution") }} {{
+                  checkbox("download_subtitles", "Download Subtitles:") }} {{ text_input("preferred_audio_language", "Preferred Audio
+                  Language:", "Enter preferred audio language") }} {{ text_input("preferred_subtitle_language", "Preferred Subtitle
+                  Language:", "Enter preferred subtitle language") }} {{ checkbox("download_all_available_audio", "Download All Available
+                  Audio:") }} {{ checkbox("download_all_available_subtitles", "Download All Available Subtitles:") }}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("alpine:init", () => {
+        Alpine.data("settingsApp", () => ({
+          config: {},
+          accountPool: [],
+          newAccount: {
+            service: "qobuz",
+            username: "",
+            password: "",
+          },
+          showUsernameInput: true,
+          showPasswordInput: true,
+          showAddButton: true,
+          showNotice: false,
+          usernamePlaceholder: "Enter your email",
+          passwordPlaceholder: "Enter your password",
+          addButtonText: "Add Account",
+          noticeText: "",
+
+          init() {
+            this.handleServiceChange();
+            fetch("/api/config")
+              .then((r) => r.json())
+              .then((data) => {
+                this.config = data.config || {};
+                this.accountPool = data.account_pool || [];
+              });
+          },
+
+          saveSettings() {
+            // The config object bound via x-model contains everything.
+            updateSettings(this.config);
+          },
+
+          handleServiceChange() {
+            const s = this.newAccount.service;
+            this.showUsernameInput = false;
+            this.showPasswordInput = false;
+            this.showAddButton = false;
+            this.showNotice = false;
+
+            if (s === "apple_music") {
+              this.showPasswordInput = true;
+              this.passwordPlaceholder = "Enter your user-media-token";
+              this.showAddButton = true;
+              this.addButtonText = "Add Account";
+            } else if (s === "bandcamp") {
+              this.showAddButton = true;
+              this.addButtonText = "Add Public Bandcamp Account";
+            } else if (s === "deezer") {
+              this.showPasswordInput = true;
+              this.passwordPlaceholder = "Enter your arl";
+              this.showAddButton = true;
+              this.addButtonText = "Add Account";
+            } else if (s === "qobuz") {
+              this.showUsernameInput = true;
+              this.usernamePlaceholder = "Enter your email";
+              this.showPasswordInput = true;
+              this.passwordPlaceholder = "Enter your password";
+              this.showAddButton = true;
+              this.addButtonText = "Add Account";
+            } else if (s === "soundcloud") {
+              this.showPasswordInput = true;
+              this.passwordPlaceholder = "Enter your oauth-token";
+              this.showAddButton = true;
+              this.addButtonText = "Add Account";
+            } else if (s === "spotify") {
+              this.showNotice = true;
+              this.noticeText =
+                "Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.";
+            } else if (s === "tidal") {
+              this.showNotice = true;
+              this.noticeText =
+                "Logins for this service are not currently supported, please login through the desktop app and modify your config accordingly.";
+            } else if (s === "youtube_music") {
+              this.showAddButton = true;
+              this.addButtonText = "Add Public Youtube Music Account";
+            } else if (s === "crunchyroll") {
+              this.showUsernameInput = true;
+              this.usernamePlaceholder = "Enter your email";
+              this.showPasswordInput = true;
+              this.passwordPlaceholder = "Enter your password";
+              this.showAddButton = true;
+              this.addButtonText = "Add Account";
+            } else if (s === "generic") {
+              this.showAddButton = true;
+              this.addButtonText = "Add Generic Account";
+            }
+          },
+
+          addAccount() {
+            fetch("/api/add_account", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(this.newAccount),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log("Success:", data);
+                alert("Account added successfully! Please restart the app.");
+              })
+              .catch((error) => console.error("Error:", error));
+          },
+
+          removeAccount(accountId) {
+            fetch(`/api/remove_account/${accountId}`, { method: "DELETE" }).then((response) => {
+              if (response.ok) {
+                alert("Account removed successfully! Please restart the app.");
+              }
             });
-        </script>
-    </body>
+          },
+        }));
+      });
+    </script>
+  </body>
 </html>
