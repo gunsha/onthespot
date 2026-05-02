@@ -80,7 +80,8 @@ export async function makeCall(url: string, options: MakeCallOptions = {}): Prom
       }
       return JSON.parse(responseText);
     } else {
-      logger.info(`Request status error ${response.status}: ${requestUrl}`);
+      const errText = await response.text();
+      logger.info(`Request status error ${response.status}: ${requestUrl} | body: ${errText}`);
       return null;
     }
   } catch (e: any) {

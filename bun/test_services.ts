@@ -1,40 +1,42 @@
-import { generic_list_extractors, generic_get_track_metadata } from './src/services/generic/index';
-import { youtube_music_get_track_metadata, youtube_music_get_search_results } from './src/services/youtube_music/index';
+import { config } from './src/config/index';
+import { fillAccountPool, getAccountToken, accountPool } from './src/accounts/index';
+import { ServiceRegistry } from './src/services/index';
+import { Service } from './src/types/service';
 
-async function runTests() {
-  console.log('--- Testing Generic Service ---');
-  
-  try {
-    const extractors = await generic_list_extractors();
-    console.log(`Found ${extractors.length} generic extractors`);
-    if (extractors.length > 0) {
-      console.log(`First 5 extractors: ${extractors.slice(0, 5).join(', ')}`);
+async function main() {
+  console.log('--- Config initialization ---');
+  // Config loads automatically on import
+  console.log('Config accounts:', JSON.stringify(config.get('accounts'), null, 2));
+
+  console.log('\n--- Testing fillAccountPool ---');
+  await fillAccountPool((msg, success) => {
+    console.log(`[Progress] ${msg.replace(/\n/g, ' ')} - Success: ${success}`);
+  });
+
+  console.log('\nAccount Pool loaded:');
+  console.log(accountPool.map(a => `${a.uuid} (${a.service}) [active: ${a.active}]`));
+
+  console.log('\n--- Testing getAccountToken ---');
+  const ytAcc = getAccountToken(Service.YOUTUBE_MUSIC);
+  console.log('Youtube Music Account:', ytAcc ? ytAcc.uuid : 'None');
+
+  const amAcc = getAccountToken(Service.APPLE_MUSIC);
+  console.log('Apple Music Account:', amAcc ? amAcc.uuid : 'None');
+
+  console.log('\n--- Testing Service Registry calls ---');
+  if (true) {
+    const ytService = ServiceRegistry[Service.YOUTUBE_MUSIC];
+    if (ytService && ytService.get_search_results) {
+        console.log('Executing youtube search for "Rick Astley Never Gonna Give You Up"');
+        const results = await ytService.get_search_results(ytAcc, 'Rick Astley Never Gonna Give You Up', ['track']);
+        console.log('Search Results count:', results.length);
+        if (results.length > 0) {
+            console.log('First result:', results[0]);
+        }
     }
-
-    console.log('\nFetching generic metadata for a youtube video...');
-    const genericMeta = await generic_get_track_metadata(undefined, 'https://www.youtube.com/watch?v=jNQXAC9IVRw');
-    console.log('Generic Meta:', genericMeta);
-  } catch (e) {
-    console.error('Generic Service tests failed:', e);
   }
 
-  console.log('\n--- Testing YouTube Music Service ---');
-  try {
-    console.log('\nSearching for "Rick Astley" on YouTube Music...');
-    const searchResults = await youtube_music_get_search_results(undefined, 'Rick Astley Never Gonna Give You Up', ['track']);
-    console.log(`Found ${searchResults.length} search results`);
-    
-    if (searchResults.length > 0) {
-      const firstResult = searchResults[0];
-      console.log('First search result:', firstResult);
-      
-      console.log('\nFetching full metadata for the first result...');
-      const fullMeta = await youtube_music_get_track_metadata(undefined, firstResult.item_id as string);
-      console.log('Full Metadata:', fullMeta);
-    }
-  } catch (e) {
-    console.error('YouTube Music Service tests failed:', e);
-  }
+  console.log('\nDone.');
 }
 
-runTests().then(() => console.log('\nTests completed.'));
+main().catch(console.error);

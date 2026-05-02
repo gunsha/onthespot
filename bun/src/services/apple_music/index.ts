@@ -21,7 +21,7 @@ function getHeaders(account?: Account): Record<string, string> {
     Accept: 'application/json',
     'Accept-Language': 'en-US',
     'Accept-Encoding': 'utf-8',
-    'content-type': 'application/json',
+    'Content-Type': 'application/json',
     'x-apple-renewal': 'true',
     DNT: '1',
     Connection: 'keep-alive',
@@ -499,7 +499,7 @@ export async function apple_music_get_decryption_key(account: Account | undefine
   const m3u8Text = await m3u8Res.text();
 
   // Extract the PSSH base64 from the first EXT-X-KEY tag
-  const uriMatch = m3u8Text.match(/#EXT-X-KEY:.*?URI="(data:text\/plain;base64,[^"]+)"/);
+  const uriMatch = m3u8Text.match(/#EXT-X-KEY:.*?URI="(data:.*?;base64,[^"]+)"/);
   if (!uriMatch) {
     console.error('Could not find PSSH URI in m3u8');
     return null;

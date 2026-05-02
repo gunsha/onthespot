@@ -74,3 +74,32 @@ export async function extractInfo(url: string, flat: boolean = false, extraArgs:
     throw err;
   }
 }
+
+export async function downloadMedia(url: string, outputPath: string, extraArgs: string[] = []): Promise<void> {
+  const args = [
+    'yt-dlp',
+    '--quiet',
+    '--no-warnings',
+    '-o', outputPath,
+    ...extraArgs,
+    url
+  ];
+
+  try {
+    const proc = Bun.spawn(args, {
+      stdout: 'ignore',
+      stderr: 'pipe',
+    });
+
+    const exitCode = await proc.exited;
+
+    if (exitCode !== 0) {
+      const errorText = await new Response(proc.stderr).text();
+      console.error(`yt-dlp download error (${exitCode}):`, errorText);
+      throw new Error(`yt-dlp download failed with exit code ${exitCode}`);
+    }
+  } catch (err) {
+    console.error(`Error running yt-dlp to download url: ${url}`, err);
+    throw err;
+  }
+}
