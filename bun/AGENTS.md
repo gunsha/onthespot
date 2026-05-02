@@ -15,9 +15,9 @@ Music/video downloader supporting multiple streaming services (Spotify, Tidal, D
 
 ---
 
-## Phase 1: Core Infrastructure
+## Phase 1: Core Infrastructure (Completed)
 
-### 1.1 Shared Types & Interfaces
+### 1.1 Shared Types & Interfaces (Completed)
 
 Create `src/types/`:
 
@@ -25,7 +25,7 @@ Create `src/types/`:
 - `account.ts` - Account types for each service
 - `track.ts` - Track/search result interfaces
 
-### 1.2 Config System
+### 1.2 Config System (Completed)
 
 Port `otsconfig.py` → `src/config/index.ts`
 
@@ -34,7 +34,7 @@ Port `otsconfig.py` → `src/config/index.ts`
 - Path resolution (config dir, cache dir)
 - FFMPEG path detection
 
-### 1.3 Logger System
+### 1.3 Logger System (Completed)
 
 Port `runtimedata.py` → `src/logger/index.ts`
 
@@ -42,7 +42,7 @@ Port `runtimedata.py` → `src/logger/index.ts`
 - Console output
 - Log levels
 
-### 1.4 HTTP Utility
+### 1.4 HTTP Utility (Completed)
 
 Port `utils.py:make_call` → `src/http/client.ts`
 
@@ -50,7 +50,7 @@ Port `utils.py:make_call` → `src/http/client.ts`
 - Native `fetch` (Bun)
 - Optional session management
 
-### 1.5 Utility Functions
+### 1.5 Utility Functions (Completed)
 
 Port key utils from `utils.py`:
 
@@ -94,13 +94,14 @@ Start with `api/generic.py` + `api/youtube_music.py`:
 - Token management
 - Lyrics fetching (different endpoint)
 
-### 2.5 Other Services (Future)
+### 2.5 Other Services
 
-- SoundCloud
-- Qobuz
-- Apple Music
-- Bandcamp
-- Crunchyroll
+- Apple Music (Completed)
+  - Auth, Metadata, Search, Lyrics (Regex), DRM Extraction (via `node-widevine`)
+- SoundCloud (Future)
+- Qobuz (Future)
+- Bandcamp (Future)
+- Crunchyroll (Future)
 
 ---
 
