@@ -532,16 +532,18 @@ def set_music_thumbnail(filename, metadata):
         image_path += "." + config.get("album_cover_format")
 
         # Fetch thumbnail
-        #if not os.path.isfile(image_path) or (parent_category == 'playlist' and config.get('use_playlist_path')):
-        logger.info(f"Fetching item thumbnail")
-        img = Image.open(BytesIO(requests.get(metadata['image_url']).content))
-        buf = BytesIO()
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        img.save(buf, format=config.get("album_cover_format"))
-        buf.seek(0)
-        with open(image_path, 'wb') as cover:
-            cover.write(buf.read())
+        if os.path.isfile(image_path):
+            logger.info(f"Cover image already exists, skipping download")
+        else:
+            logger.info(f"Fetching item thumbnail")
+            img = Image.open(BytesIO(requests.get(metadata['image_url']).content))
+            buf = BytesIO()
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img.save(buf, format=config.get("album_cover_format"))
+            buf.seek(0)
+            with open(image_path, 'wb') as cover:
+                cover.write(buf.read())
 
         if not config.get('raw_media_download'):
             # I have no idea why music tag manages to display covers
