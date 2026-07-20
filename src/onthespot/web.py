@@ -356,10 +356,19 @@ def add_account():
 @login_required
 def remove_account(uuid):
     accounts = config.get('accounts').copy()
+    account_number = None
     for i, account in enumerate(accounts):
         if account['uuid'] == uuid:
             account_number = i
-    del account_pool[account_number]
+            break
+    if account_number is None:
+        return jsonify(success=False, error="Account not found"), 404
+    pool_index = next(
+        (i for i, acc in enumerate(account_pool) if acc.get('uuid') == uuid),
+        None,
+    )
+    if pool_index is not None:
+        del account_pool[pool_index]
     del accounts[account_number]
     config.set('accounts', accounts)
     config.set('active_account_number', 0)
