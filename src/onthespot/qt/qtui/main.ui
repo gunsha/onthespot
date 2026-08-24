@@ -2356,11 +2356,50 @@
                     </layout>
                    </widget>
                   </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QGroupBox" name="gb1_13">
+                   <item>
+                    <widget class="QGroupBox" name="group_resize_album_cover">
+                     <property name="title">
+                      <string/>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_resize_cover">
+                      <item>
+                       <widget class="QCheckBox" name="resize_album_cover">
+                        <property name="layoutDirection">
+                         <enum>Qt::RightToLeft</enum>
+                        </property>
+                        <property name="text">
+                         <string>Resize Album Cover</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="lb_album_cover_size">
+                        <property name="text">
+                         <string>Album Cover Size (pixels)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="album_cover_size">
+                        <property name="minimum">
+                         <number>16</number>
+                        </property>
+                        <property name="maximum">
+                         <number>10000</number>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="gb1_13">
                  <property name="title">
                   <string/>
                  </property>

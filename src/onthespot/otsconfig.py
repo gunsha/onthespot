@@ -145,6 +145,8 @@ class Config:
             "extinf_label": "{playlist_number}. {artist} - {name}", # M3U EXTINF path
             "save_album_cover": False, # Save album covers to a file
             "album_cover_format": "png", # Album cover format
+            "resize_album_cover": False, # Resize album covers
+            "album_cover_size": 640, # Album cover resize size in pixels
             "file_bitrate": "320k", # Converted file bitrate
             "file_hertz": 44100, # Converted file hertz
             "use_custom_file_bitrate": True, # Use bitrate specified by file bitrate

@@ -846,12 +846,25 @@ def set_music_thumbnail(filename, metadata):
     format = config.get("album_cover_format")
     image_path = os.path.join(dirname, f"cover.{format}")
 
-    logger.info("Fetching item thumbnail")
-    try:
-        img = Image.open(BytesIO(requests.get(metadata["image_url"]).content))
-    except Exception as e:
-        logger.error(f"Failed to download image: {e}")
-        return
+    if os.path.isfile(image_path):
+        logger.info("Thumbnail already exists, skipping download")
+        try:
+            img = Image.open(image_path)
+        except Exception as e:
+            logger.error(f"Failed to open existing image: {e}")
+            return
+    else:
+        logger.info("Fetching item thumbnail")
+        try:
+            img = Image.open(BytesIO(requests.get(metadata["image_url"]).content))
+        except Exception as e:
+            logger.error(f"Failed to download image: {e}")
+            return
+
+    if config.get("resize_album_cover"):
+        size = config.get("album_cover_size")
+        logger.info(f"Resizing item thumbnail to {size}x{size}")
+        img = img.resize((size, size), Image.LANCZOS)
 
     _save_image(img, image_path, format)
 

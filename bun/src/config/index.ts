@@ -128,6 +128,8 @@ export class ConfigManager {
       extinf_label: '{playlist_number}. {artist} - {name}',
       save_album_cover: false,
       album_cover_format: 'png',
+      resize_album_cover: false,
+      album_cover_size: 640,
       file_bitrate: '320k',
       file_hertz: 44100,
       use_custom_file_bitrate: true,

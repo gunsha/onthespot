@@ -68,6 +68,7 @@ def load_config(self):
         "language",
         "max_search_results",
         "thumbnail_size",
+        "album_cover_size",
         "preferred_video_resolution",
         "retry_worker_delay",
         "file_hertz",
@@ -163,6 +164,8 @@ def load_config(self):
     self.extinf_label.setText(config.get("extinf_label"))
     self.save_album_cover.setChecked(config.get("save_album_cover"))
     self.album_cover_format.setText(config.get("album_cover_format"))
+    self.resize_album_cover.setChecked(config.get("resize_album_cover"))
+    self.album_cover_size.setValue(config.get("album_cover_size"))
     self.file_bitrate.setText(config.get("file_bitrate"))
     self.file_hertz.setValue(config.get("file_hertz"))
     self.use_custom_file_bitrate.setChecked(config.get("use_custom_file_bitrate"))
@@ -283,6 +286,8 @@ def save_config(self):
     config.set('extinf_label', self.extinf_label.text())
     config.set('save_album_cover', self.save_album_cover.isChecked())
     config.set('album_cover_format', self.album_cover_format.text())
+    config.set('resize_album_cover', self.resize_album_cover.isChecked())
+    config.set('album_cover_size', self.album_cover_size.value())
     config.set('file_bitrate', self.file_bitrate.text())
     config.set('file_hertz', self.file_hertz.value())
     config.set('use_custom_file_bitrate', self.use_custom_file_bitrate.isChecked())
