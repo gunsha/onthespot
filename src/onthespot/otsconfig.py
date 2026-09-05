@@ -132,6 +132,7 @@ class Config:
             "download_queue_show_completed": True, # Enable listed filter in download queue
 
             # Audio Download Settings
+            "tmp_download_path": os.environ.get("ONTHESPOT_TMP_PATH", ""), # Staging dir for in-progress downloads; finished files are moved to the final download path. Empty disables staging.
             "audio_download_path": os.path.join(os.path.expanduser("~"), "Music", "OnTheSpot"), # Root dir for audio downloads
             "track_file_format": "mp3", # Song track media format
             "track_path_formatter": "Tracks" + os.path.sep + "{album_artist}" + os.path.sep + "[{year}] {album}" + os.path.sep + "{track_number}. {name}", # Track path format string
@@ -224,10 +225,15 @@ class Config:
             with open(self.__cfg_path, "w") as cf:
                 cf.write(json.dumps(self.__template_data, indent=4))
             self.__config = self.__template_data
+        # Env override for staging dir (takes precedence over stored config)
+        if os.environ.get("ONTHESPOT_TMP_PATH"):
+            self.set("tmp_download_path", os.environ["ONTHESPOT_TMP_PATH"])
         # Make Download Dirs
         try:
             os.makedirs(self.get("audio_download_path"), exist_ok=True)
             os.makedirs(self.get("video_download_path"), exist_ok=True)
+            if self.get("tmp_download_path"):
+                os.makedirs(self.get("tmp_download_path"), exist_ok=True)
         except (FileNotFoundError, PermissionError):
             print('Failed to create download dir, attempting fallback path.')
             self.set('audio_download_path', self.__template_data.get('audio_download_path'))

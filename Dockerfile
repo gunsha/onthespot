@@ -3,7 +3,8 @@ FROM python:3-slim AS base
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/app/venv/bin:$PATH"
+    PATH="/app/venv/bin:$PATH" \
+    ONTHESPOT_TMP_PATH="/tmp/onthespot"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -41,6 +42,12 @@ RUN find /app/venv \
 FROM base AS runtime
 
 COPY --from=builder /app/venv /app/venv
+
+# Staging dir for in-progress downloads. Finished files are moved to the
+# mounted Music/Videos volumes only after download + conversion. Keep this
+# path inside the container (do not mount it) so partial files (.part/.ytdl,
+# fragments) never appear in the download folders.
+RUN mkdir -p /tmp/onthespot && chmod 1777 /tmp/onthespot
 
 EXPOSE 5000
 CMD ["onthespot-web", "--host", "0.0.0.0", "--port", "5000"]

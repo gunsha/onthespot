@@ -252,7 +252,8 @@
                   <col class="w-1/2" />
                 </colgroup>
                 <tbody>
-                  {{ text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }} {{
+                  {{ text_input("tmp_download_path", "Temporary (Staging) Download Path:", "Empty disables staging; finished files are moved to the final path") }} {{
+                  text_input("audio_download_path", "Audio Download Path:", "Enter audio download path") }} {{
                   text_input("track_file_format", "Track File Format:", "Enter track file format") }} {{ text_input("track_path_formatter",
                   "Track Path Formatter:", "Enter track path format") }} {{ text_input("podcast_file_format", "Podcast File Format:", "Enter
                   podcast file format") }} {{ text_input("podcast_path_formatter", "Podcast Path Formatter:", "Enter podcast path format")

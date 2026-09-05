@@ -5,7 +5,12 @@ services:
     restart: unless-stopped
     ports:
      - 5000:5000
+    environment:
+    - ONTHESPOT_TMP_PATH=/tmp/onthespot
     volumes:
     - ./Music:/root/Music/OnTheSpot
     - ./Videos:/root/Videos/OnTheSpot
     - ./Config:/root/.config/onthespot
+    # NOTE: /tmp/onthespot is intentionally NOT mounted, so in-progress
+    # downloads stay inside the container and only finished tracks are
+    # moved to ./Music and ./Videos.

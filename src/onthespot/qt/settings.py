@@ -150,6 +150,14 @@ def load_config(self):
     self.download_queue_show_unavailable.setChecked(config.get("download_queue_show_unavailable"))
     self.download_queue_show_completed.setChecked(config.get("download_queue_show_completed"))
 
+    # Staging (tmp) Download Settings. The line edit also feeds the
+    # session override via textChanged; prefill override first if set.
+    from ..runtimedata import temp_download_path as _tmp_override
+    if _tmp_override:
+        self.tmp_dl_root.setText(_tmp_override[0])
+    else:
+        self.tmp_dl_root.setText(config.get("tmp_download_path") or "")
+
     # Audio Download Settings
     self.audio_download_path.setText(config.get("audio_download_path"))
     self.track_file_format.setText(config.get("track_file_format"))
@@ -271,6 +279,10 @@ def save_config(self):
     config.set('download_queue_show_cancelled', self.download_queue_show_cancelled.isChecked())
     config.set('download_queue_show_unavailable', self.download_queue_show_unavailable.isChecked())
     config.set('download_queue_show_completed', self.download_queue_show_completed.isChecked())
+
+    # Staging (tmp) Download Settings (persisted; session override
+    # stays in sync via the tmp_dl_root.textChanged signal)
+    config.set('tmp_download_path', self.tmp_dl_root.text())
 
     # Audio Download Settings
     config.set('audio_download_path', self.audio_download_path.text())

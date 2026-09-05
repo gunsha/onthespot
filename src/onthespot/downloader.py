@@ -1,5 +1,6 @@
 import re
 import requests
+import shutil
 import subprocess
 import threading
 import time
@@ -25,6 +26,77 @@ from .runtimedata import get_logger, download_queue, download_queue_lock, accoun
 from .utils import format_item_path, convert_audio_format, embed_metadata, set_music_thumbnail, fix_mp3_metadata, add_to_m3u_file, strip_metadata, convert_video_format
 
 logger = get_logger("downloader")
+
+
+def _get_final_root(item_type):
+    """Return the final (user-facing) download root for *item_type*."""
+    if item_type in ['track', 'podcast_episode']:
+        return config.get("audio_download_path")
+    return config.get("video_download_path")
+
+
+def _get_staging_root(final_root):
+    """Return the staging root for in-progress downloads.
+
+    Priority: GUI session override (``temp_download_path``) >
+    ``tmp_download_path`` config (itself overridable via the
+    ``ONTHESPOT_TMP_PATH`` env var) > *final_root* (staging disabled).
+    """
+    if temp_download_path:
+        return temp_download_path[0]
+    staging_root = config.get("tmp_download_path")
+    if staging_root:
+        return staging_root
+    return final_root
+
+
+def _move_to_final(src, dst):
+    """Move finished file *src* to *dst*, creating parent dirs.
+
+    Uses :func:`shutil.move` so staging -> final works across filesystems
+    (e.g. ``/tmp`` tmpfs to a mounted ``/root/Music`` volume).
+    """
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.move(src, dst)
+
+
+def _preseed_cover(staging_dir, final_dir):
+    """Copy an already-downloaded cover from *final_dir* to *staging_dir*.
+
+    Prevents re-downloading album art for every track of the same album
+    when staging is enabled: the existing ``set_music_thumbnail`` check
+    then hits in staging and skips the download.
+    """
+    if not config.get("save_album_cover"):
+        return
+    cover_name = f"cover.{config.get('album_cover_format')}"
+    staged_cover = os.path.join(staging_dir, cover_name)
+    final_cover = os.path.join(final_dir, cover_name)
+    if not os.path.isfile(staged_cover) and os.path.isfile(final_cover):
+        try:
+            shutil.copy2(final_cover, staged_cover)
+        except OSError as e:
+            logger.debug(f"Could not pre-seed cover art: {e}")
+
+
+def _publish_cover(staging_dir, final_dir):
+    """Publish staged cover art to *final_dir* without removing the cache.
+
+    The staged copy is deliberately kept so later tracks of the same album
+    still hit the exists-check in staging (one download per album), while
+    the final dir ends up with the cover after the first track finishes.
+    """
+    if not config.get("save_album_cover"):
+        return
+    cover_name = f"cover.{config.get('album_cover_format')}"
+    staged_cover = os.path.join(staging_dir, cover_name)
+    final_cover = os.path.join(final_dir, cover_name)
+    if os.path.isfile(staged_cover) and not os.path.isfile(final_cover):
+        try:
+            os.makedirs(final_dir, exist_ok=True)
+            shutil.copy2(staged_cover, final_cover)
+        except OSError as e:
+            logger.debug(f"Could not publish cover art: {e}")
 
 
 class RetryWorker(QObject):
@@ -163,17 +235,17 @@ class DownloadWorker(QObject):
 
                 temp_file_path = ''
                 file_path = ''
+                final_base = ''
+                staging_enabled = False
                 if item_service != 'generic':
-                    if item_type in ['track', 'podcast_episode']:
-                        dl_root = config.get("audio_download_path")
-                    elif item_type in ['movie', 'episode']:
-                        dl_root = config.get("video_download_path")
-                    if temp_download_path:
-                        dl_root = temp_download_path[0]
-                    file_path = os.path.join(dl_root, item_path)
+                    final_root = _get_final_root(item_type)
+                    staging_root = _get_staging_root(final_root)
+                    staging_enabled = os.path.abspath(staging_root) != os.path.abspath(final_root)
+                    work_root = staging_root if staging_enabled else final_root
+                    file_path = os.path.join(final_root, item_path)
                     directory, file_name = os.path.split(file_path)
 
-                    # Additional verification of path length limits, see https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation in case the file_name + directory exceeds the path limit 
+                    # Additional verification of path length limits, see https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation in case the file_name + directory exceeds the path limit
                     # and for UNIX systems it's the same https://serverfault.com/questions/9546/filename-length-limits-on-linux
                     name, ext = os.path.splitext(file_name)
                     MAX_PATH_LENGTH = 260
@@ -183,14 +255,26 @@ class DownloadWorker(QObject):
                         name = name[:trim_length]
                         file_name = name + ext
                         file_path = os.path.join(directory, file_name)
-                    
+
+                    final_base = file_path
+                    if staging_enabled:
+                        # Mirror the final relative layout inside staging so in-progress
+                        # files (.part/.ytdl/fragments) never appear in the download path.
+                        file_path = os.path.join(work_root, os.path.relpath(final_base, final_root))
+                        _preseed_cover(os.path.dirname(file_path), os.path.dirname(final_base))
+
+                    directory, file_name = os.path.split(file_path)
                     temp_file_path = os.path.join(directory, '~' + file_name)
 
                     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-                    # Skip download if file exists under different extension
-                    file_directory = os.path.dirname(file_path)
-                    base_filename = os.path.basename(file_path)
+                    # Skip download if file exists under different extension.
+                    # Always checked against the final destination, not staging.
+                    file_directory = os.path.dirname(final_base)
+                    base_filename = os.path.basename(final_base)
+
+                    if not os.path.isdir(file_directory):
+                        os.makedirs(file_directory, exist_ok=True)
 
                     for entry in os.listdir(file_directory):
                         full_path = os.path.join(file_directory, entry)  # Construct the full file path
@@ -209,7 +293,7 @@ class DownloadWorker(QObject):
                                         item['item_status'] = 'Getting Lyrics'
                                         if self.gui:
                                             self.progress.emit(item, self.tr("Getting Lyrics"), 99)
-                                        extra_metadata = globals()[f"{item_service}_get_lyrics"](token, item_id, item_type, item_metadata, file_path)
+                                        extra_metadata = globals()[f"{item_service}_get_lyrics"](token, item_id, item_type, item_metadata, final_base)
                                         if isinstance(extra_metadata, dict):
                                             item_metadata.update(extra_metadata)
 
@@ -231,7 +315,7 @@ class DownloadWorker(QObject):
                                             item['item_status'] = 'Setting Thumbnail'
                                             if self.gui:
                                                 self.progress.emit(item, self.tr("Setting Thumbnail"), 99)
-                                            set_music_thumbnail(file_path, item_metadata)
+                                            set_music_thumbnail(item['file_path'], item_metadata)
 
                                 # M3U
                                 if config.get('create_m3u_file') and item.get('parent_category') == 'playlist':
@@ -657,6 +741,15 @@ class DownloadWorker(QObject):
 
                     elif item_service == 'generic':
                         temp_file_path = ''
+                        # Stage generic downloads in tmp as well; move to the
+                        # final video path once finished.
+                        generic_final_root = config.get("video_download_path")
+                        generic_staging_root = _get_staging_root(generic_final_root)
+                        generic_staging_enabled = (
+                            os.path.abspath(generic_staging_root) != os.path.abspath(generic_final_root)
+                        )
+                        generic_work_root = generic_staging_root if generic_staging_enabled else generic_final_root
+                        os.makedirs(generic_work_root, exist_ok=True)
                         ydl_opts = {}
                         # Prefer bestvideo in mp4 with specified resolution, then
                         # just best video with specified resolution, and if neither
@@ -667,7 +760,7 @@ class DownloadWorker(QObject):
                         ydl_opts['quiet'] = True
                         ydl_opts['no_warnings'] = True
                         ydl_opts['noprogress'] = True
-                        ydl_opts['outtmpl'] = config.get('video_download_path') + os.path.sep + '%(title)s.%(ext)s'
+                        ydl_opts['outtmpl'] = generic_work_root + os.path.sep + '%(title)s.%(ext)s'
                         ydl_opts['ffmpeg_location'] = config.get('_ffmpeg_bin_path')
                         ydl_opts['postprocessors'] = [{
                             'key': 'FFmpegMetadata',  # Enables embedding metadata
@@ -677,6 +770,16 @@ class DownloadWorker(QObject):
                         with YoutubeDL(ydl_opts) as video:
                             item['file_path'] = video.prepare_filename(video.extract_info(item_id, download=False))
                             video.download(item_id)
+                        if generic_staging_enabled and isinstance(item.get('file_path'), str):
+                            staged_generic_path = item['file_path']
+                            if os.path.isfile(staged_generic_path):
+                                if self.gui:
+                                    self.progress.emit(item, self.tr("Moving"), 99)
+                                _move_to_final(
+                                    staged_generic_path,
+                                    os.path.join(generic_final_root, os.path.basename(staged_generic_path))
+                                )
+                                item['file_path'] = os.path.join(generic_final_root, os.path.basename(staged_generic_path))
 
                 except RuntimeError as e:
                     # Likely Ratelimit
@@ -727,6 +830,8 @@ class DownloadWorker(QObject):
                                 item['item_status'] = 'Setting Thumbnail'
                                 if self.gui:
                                     self.progress.emit(item, self.tr("Setting Thumbnail"), 99)
+                                if staging_enabled:
+                                    _preseed_cover(os.path.dirname(file_path), os.path.dirname(final_base))
                                 set_music_thumbnail(file_path, item_metadata)
 
                             if os.path.splitext(file_path)[1] == '.mp3':
@@ -736,9 +841,28 @@ class DownloadWorker(QObject):
                                 item['item_status'] = 'Setting Thumbnail'
                                 if self.gui:
                                     self.progress.emit(item, self.tr("Setting Thumbnail"), 99)
+                                if staging_enabled:
+                                    _preseed_cover(os.path.dirname(file_path), os.path.dirname(final_base))
                                 set_music_thumbnail(file_path, item_metadata)
 
-                        # M3U
+                        if staging_enabled:
+                            if self.gui:
+                                self.progress.emit(item, self.tr("Moving"), 99)
+                            staged_audio_path = file_path
+                            staged_lrc_path = os.path.splitext(file_path)[0] + '.lrc'
+                            if not os.path.isfile(staged_lrc_path):
+                                staged_lrc_path = None
+                            final_audio_path = final_base + os.path.splitext(file_path)[1]
+                            logger.info(f"Moving finished track to final path: '{final_audio_path}'")
+                            _move_to_final(staged_audio_path, final_audio_path)
+                            if staged_lrc_path:
+                                _move_to_final(staged_lrc_path, final_base + '.lrc')
+                            _publish_cover(os.path.dirname(staged_audio_path), os.path.dirname(final_audio_path))
+                            file_path = final_audio_path
+                            item['file_path'] = final_audio_path
+                            final_base = os.path.splitext(final_audio_path)[0]
+
+                        # M3U (always written to the final download path)
                         if config.get('create_m3u_file') and item.get('parent_category') == 'playlist':
                             item['item_status'] = 'Adding To M3U'
                             if self.gui:
@@ -764,6 +888,17 @@ class DownloadWorker(QObject):
                             item['file_path'] = file_path + '.' + output_format
                         else:
                             item['file_path'] = file_path + '.mp4'
+
+                        if staging_enabled and isinstance(item.get('file_path'), str):
+                            if self.gui:
+                                self.progress.emit(item, self.tr("Moving"), 99)
+                            staged_video_path = item['file_path']
+                            final_video_path = final_base + os.path.splitext(staged_video_path)[1]
+                            logger.info(f"Moving finished video to final path: '{final_video_path}'")
+                            _move_to_final(staged_video_path, final_video_path)
+                            item['file_path'] = final_video_path
+                            file_path = final_base
+                            final_base = os.path.splitext(final_video_path)[0]
 
                 item['item_status'] = 'Downloaded'
                 logger.info("Item Successfully Downloaded")
@@ -792,12 +927,25 @@ class DownloadWorker(QObject):
                 time.sleep(config.get("download_delay"))
                 self.readd_item_to_download_queue(item)
 
-                if os.path.exists(temp_file_path):
-                    os.remove(temp_file_path)
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                if isinstance(item['file_path'], str) and os.path.exists(item['file_path']):
-                    os.remove(item['file_path'])
+                for _cleanup_path in (temp_file_path, file_path):
+                    if _cleanup_path and os.path.isfile(_cleanup_path):
+                        try:
+                            os.remove(_cleanup_path)
+                        except OSError:
+                            pass
+                # Remove a partially moved final file when staging is enabled
+                if final_base and final_base != file_path:
+                    for _candidate in (final_base + os.path.splitext(file_path)[1], final_base + '.lrc'):
+                        if _candidate and os.path.isfile(_candidate):
+                            try:
+                                os.remove(_candidate)
+                            except OSError:
+                                pass
+                if isinstance(item.get('file_path'), str) and os.path.isfile(item['file_path']):
+                    try:
+                        os.remove(item['file_path'])
+                    except OSError:
+                        pass
                 continue
 
 
